@@ -45,7 +45,7 @@
              '("stroustrup"
                (indent-tabs-mode . nil)        ; use spaces rather than tabs
                (c-access-key . "\\<\\(signals\\|public\\|protected\\|private\\|public slots\\|protected slots\\|private slots\\):")
-               (c-basic-offset . 2)            ; indent by two spaces
+               (c-basic-offset . 3)            ; indent by two spaces
                (c-offsets-alist . ((inline-open . 0)  ; custom indentation rules
                                    (brace-list-open . 0)
                                    (case-label . +)

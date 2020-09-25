@@ -156,7 +156,7 @@
   (setq bm-repository-file "~/.emacs.d/bm-repository") ;;where to store persistant files
   (setq-default bm-buffer-persistence t)               ;; save bookmarks
   (add-hook' after-init-hook 'bm-repository-load)      ;; Loading the repository from file when on start up
-  (add-hook 'find-file-hooks 'bm-buffer-restore)       ;; Restoring bookmarks when on file find.
+  (add-hook 'find-file-hooks 'bm-buffer-restore)    x   ;; Restoring bookmarks when on file find.
   (add-hook 'kill-buffer-hook 'bm-buffer-save)         ;; Saving bookmarks
 
   ;; Saving the repository to file when on exit.

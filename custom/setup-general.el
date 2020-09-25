@@ -37,7 +37,7 @@
 ;; -----------------------------------------------------------------------------
 ;; Font
 ;;
-(set-default-font "Inconsolata-11")
+;;(set-default-font "Inconsolata-11")
 ;; (set-frame-buffer "Inconsolata-11")
 ;;(set-face-attribute 'default nil :height 90);;93
 (setq-default line-spacing 0)
@@ -143,9 +143,9 @@
 ;; -----------------------------------------------------------------------------
 ;; NeoTree - A tree plugin like NerdTree for Vim
 ;;
-(require 'neotree)
-(global-set-key (kbd "C-p") 'neotree-toggle)
-(setq neo-smart-open t)
+;; (require 'neotree)
+;; (global-set-key (kbd "C-p") 'neotree-toggle)
+;; (setq neo-smart-open t)
 
 
 ;; -----------------------------------------------------------------------------
