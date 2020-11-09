@@ -9,6 +9,7 @@
 (add-to-list 'load-path "~/.emacs.d/site-lisp/org-mode/lisp/")
 
 
+;; -----------------------------------------------------------------------------
 ;; User info
 ;;
 (setq user-full-name "Adalbert Soborka"
@@ -16,6 +17,8 @@
 
 (setq gc-cons-threshold 100000000)
 
+
+;; -----------------------------------------------------------------------------
 ;; Use Package
 ;;
 (require 'package)
@@ -30,6 +33,7 @@
 (setq use-package-always-ensure t)
 
 
+;; -----------------------------------------------------------------------------
 ;; Detection Operating System
 ;;
 (defun is-linux-p
@@ -47,8 +51,8 @@
 ;; -----------------------------------------------------------------------------
 ;; Theme
 ;;
-(load-theme 'tango-dark)       ;; dark background thema(defalias 'yes-or-no-p 'y-or-n-p)
-(set-cursor-color "#77ff00")   ;; set cursor color to white
+;;(load-theme 'tango-dark)       ;; dark background thema
+;;(set-cursor-color "#77ff00")   ;; set cursor color to white
 
 
 ;; -----------------------------------------------------------------------------
@@ -57,6 +61,7 @@
 (set-face-attribute 'default nil :height 90);;93
 ;;(set-default-font "Inconsolata-11")
 (setq-default line-spacing 0)
+
 
 ;; -----------------------------------------------------------------------------
 ;; misc useful keybindings
@@ -77,7 +82,7 @@
 ;;(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-
+;;(set-fringe-mode 10)        ; Give some breathing room
 
 ;; -----------------------------------------------------------------------------
 ;; Startup Messages
@@ -85,43 +90,6 @@
 (setq inhibit-startup-message t
       initial-scratch-message ""
       inhibit-startup-echo-area-message t)
-
-
-;; -----------------------------------------------------------------------------
-;; Mode Line
-;; [[http://www.lunaryorn.com/2014/07/26/make-your-emacs-mode-line-more-useful.html#understanding-mode-line-format][Sebastian Wiesner]] inspired me to slim down my mode line. I have a very simple mode line that has the name of the file on the left and the date and time on the right. I've found I don't really need the mode information very often - I usually know which modes are active; if I do need the mode information, I can access that with =C-h m=, =describe-mode=. Moreover, that means I don't need to diminish most packages.
-;;
-;; I commented out any variables that I eliminated from the mode-line, so that I can add them in later if I deem them useful.
-;;
-(setq-default mode-line-format
-	      '("%e" ; print error message about full memory.
-		mode-line-front-space
-	        mode-line-mule-info
-		;; mode-line-client
-		column-number-mode
-		;; mode-line-modified
-		;; mode-line-remote
-		;; mode-line-frame-identification
-		mode-line-buffer-identification
-		"   "
-		mode-line-position
-		;; (vc-mode vc-mode)
-		;; "  "
-		;; mode-line-modes
-		"   "
-		;; mode-line-misc-info
-		;; battery-mode-line-string
-		mode-line-end-spaces))
-
-(setq display-time-format "%a, %b %e %R"
-      battery-mode-line-format "%p%%"  ; Default: "[%b%p%%]"
-      global-mode-string   (remove 'display-time-string global-mode-string)
-      mode-line-end-spaces (list (propertize " "
-					     'display '(space :align-to (- right 17)))
-				 'display-time-string))
-
-(display-time-mode 1)
-(display-time-update)
 
 
 ;; -----------------------------------------------------------------------------
@@ -177,9 +145,9 @@
 ;; -----------------------------------------------------------------------------
 ;; Nice scrolling
 ;;
-(setq scroll-margin 0
-      scroll-conservatively 100000
-      scroll-preserve-screen-position 1)
+(require 'smooth-scrolling)
+(smooth-scrolling-mode 1)
+(setq smooth-scroll-margin 5)
 
 
 ;; -----------------------------------------------------------------------------
@@ -187,7 +155,12 @@
 ;;
 (add-hook 'prog-mode-hook
           (lambda () (interactive)
-            (setq show-trailing-whitespace 1)))
+            (setq show-trailing-whitespace 5)))
+
+
+;; -----------------------------------------------------------------------------
+;; --- use space to indent by default
+(setq-default indent-tabs-mode nil)
 
 
 ;; -----------------------------------------------------------------------------
@@ -227,7 +200,7 @@
 ;;
 (cua-mode t)
 (setq cua-auto-tabify-rectangles nil) ;; Don't tabify after rectangle commands
- 
+
 
 ;; -----------------------------------------------------------------------------
 ;; Eshell
@@ -245,6 +218,23 @@
 
   (use-package esh-autosuggest
     :hook (eshell-mode . esh-autosuggest-mode)))
+
+
+;; -----------------------------------------------------------------------------
+;; example of setting env var named “path” by prepending new paths to existing paths
+;; REF: http://ergoemacs.org/emacs/eshell.html
+;;
+(when (window-system)
+  (getenv "PATH")         ;; show env var named path
+
+  (setenv "PATH"
+          (concat
+           "C:/cygwin/usr/local/bin" ";"
+           "C:/cygwin/usr/bin" ";"
+           "C:/cygwin/bin" ";"
+           "C:/tools/openjdk-14.0.2/bin" ";"
+           (getenv "PATH") ; inherited from OS
+           )))
 
 
 ;; -----------------------------------------------------------------------------
@@ -269,7 +259,7 @@
 	dired-isearch-filenames t
 	dired-listing-switches "-alh"
 	;; dired-omit-files-p t
-	;; dired-omit-files "\\|^.DS_STORE$\\|^.projectile$"
+	;; dired-omit-files "\\|^.DS_STORE$\\|^.projectile"
 	)
   ;; (use-package dired+
   ;;   :init
@@ -314,57 +304,6 @@
 (use-package magit
  :ensure t
  :bind (("C-x g" . magit-status)))
-;; -----------------------------------------------------------------------------
-;; Magit
-;;
-;; (use-package magit
-;;   :bind (("C-x g" . magit-status)
-;; ;;	 ("C-c g" . magit-status)
-;;          :map magit-status-mode-map
-;;          ("TAB" . magit-section-toggle)
-;;          ("<C-tab>" . magit-section-cycle)
-;;          :map magit-branch-section-map
-;;          ("RET" . magit-checkout))
-;;   :config
-;;   (add-hook 'after-save-hook 'magit-after-save-refresh-status)
-;;   (setq magit-use-overlays nil
-;;         magit-section-visibility-indicator nil
-;;         magit-completing-read-function 'ivy-completing-read
-;;         magit-push-always-verify nil)
-;; ;;	magit-repository-directories '("~/src/"))
-;;   (use-package git-timemachine
-;; ;; Travel back and forward in git history of the current file    
-;; ;;       p visit previous historic version
-;; ;;       n visit next historic version
-;; ;;       w copy the hash of the current historic version
-;; ;;       q exit the time machine buffer
-;;     :bind (("C-x v t" . git-timemachine)))
-;;   (use-package git-link
-;;     :bind (("C-x v L" . git-link))
-;;     :init
-;;     (setq git-link-open-in-browser t))
-;;   (use-package pcmpl-git)
-;;   (defun visit-pull-request-url ()
-;;     "Visit the current branch's PR on Github."
-;;     (interactive)
-;;     (browse-url
-;;      (format "https://github.com/%s/pull/new/%s"
-;;              (replace-regexp-in-string
-;;               "\\`.+github\\.com:\\(.+\\)\\.git\\'" "\\1"
-;;               (magit-get "remote"
-;;         		 (magit-get-remote)
-;;         		 "url"))
-;;              (cdr (magit-get-remote-branch)))))
- 
-;;   (bind-key "v" 'visit-pull-request-url magit-mode-map)
- 
-;;   ;; Do Not Show Recent Commits in status window
-;;   ;; https://github.com/magit/magit/issues/3230#issuecomment-339900039
-;;   (magit-add-section-hook 'magit-status-sections-hook
-;;         		  'magit-insert-unpushed-to-upstream
-;;         		  'magit-insert-unpushed-to-upstream-or-recent
-;;         		  'replace)
-;;  )
 
 
 ;; -----------------------------------------------------------------------------
@@ -388,123 +327,6 @@
   :delight)
 
 
-;; ----------------------------------------------------------------------------
-;; Projectile
-;; Projectile configuration adapted from [[http://endlessparentheses.com/improving-projectile-with-extra-commands.html][Improving Projectile with extra commands on Endless Parentheses]].
-;;
-(use-package projectile
-  :bind ("C-c p" . projectile-switch-project)
-  :init
-  (projectile-global-mode)
-  (use-package ibuffer-projectile
-    :bind (("C-x C-b" . ibuffer)
-	   :map ibuffer-mode-map
-	   ("c" . clean-buffer-list)
-	   ("n" . ibuffer-forward-filter-group)
-	   ("p" . ibuffer-backward-filter-group))
-    :init
-    (add-hook 'ibuffer-hook
-	      (lambda ()
-		(ibuffer-projectile-set-filter-groups)
-		(unless (eq ibuffer-sorting-mode 'alphabetic)
-		  (ibuffer-do-sort-by-alphabetic)))))
-  :config
-  (setq projectile-enable-caching t
-	projectile-create-missing-test-files t
-	projectile-completion-system 'ivy
-	projectile-use-git-grep t
-	projectile-switch-project-action #'projectile-commander
-	;; I'm redefining a lot of bindings, so unset pre-defined methods
-	;; and define everyting here.
-	projectile-commander-methods nil)
-
-
-  (def-projectile-commander-method ?? "Commander help buffer."
-    (ignore-errors (kill-buffer projectile-commander-help-buffer))
-    (with-current-buffer (get-buffer-create projectile-commander-help-buffer)
-      (insert "Projectile Commander Methods:\n\n")
-      (dolist (met projectile-commander-methods)
-	(insert (format "%c:\t%s\n" (car met) (cadr met))))
-      (goto-char (point-min))
-      (help-mode)
-      (display-buffer (current-buffer) t))
-    (projectile-commander))
-  (def-projectile-commander-method ?a
-    "Run ag on project."
-    (counsel-projectile-ag))
-  (def-projectile-commander-method ?b
-    "Open an IBuffer window showing all buffers in the current project."
-    (counsel-projectile-switch-to-buffer))
-  (def-projectile-commander-method ?B
-    "Display a project buffer in other window."
-    (projectile-display-buffer))
-  (def-projectile-commander-method ?c
-    "Run `compile' in the project."
-    (projectile-compile-project nil))
-  (def-projectile-commander-method ?d
-    "Open project root in dired."
-    (projectile-dired))
-  (def-projectile-commander-method ?D
-    "Find a project directory in other window."
-    (projectile-find-dir-other-window))
-  (def-projectile-commander-method ?e
-    "Open an eshell buffer for the project."
-    ;; This requires a snapshot version of Projectile.
-    (projectile-run-eshell))
-  (def-projectile-commander-method ?f
-    "Find a project directory in other window."
-    (projectile-find-file))
-  (def-projectile-commander-method ?F
-    "Find project file in other window."
-    (projectile-find-file-other-window))
-  (def-projectile-commander-method ?g
-    "Open project root in vc-dir or magit."
-    (projectile-vc))
-  (def-projectile-commander-method ?G
-    "Run grep on project."
-    (projectile-grep))
-  (def-projectile-commander-method ?i
-    "Open an IBuffer window showing all buffers in the current project."
-    (projectile-ibuffer))
-  (def-projectile-commander-method ?j
-    "Jack in to CLJ or CLJS depending on context."
-    (let* ((opts (projectile-current-project-files))
-	   (file (ido-completing-read
-		  "Find file: "
-		  opts
-		  nil nil nil nil
-		  (car (cl-member-if
-			(lambda (f)
-			  (string-match "core\\.clj\\'" f))
-			opts)))))
-      (find-file (expand-file-name
-		  file (projectile-project-root)))
-      (run-hooks 'projectile-find-file-hook)
-      (if (derived-mode-p 'clojurescript-mode)
-	  (cider-jack-in-clojurescript)
-	(cider-jack-in))))
-  (def-projectile-commander-method ?r
-    "Find recently visited file in project."
-    (projectile-recentf))
-  (def-projectile-commander-method ?s
-    "Switch project."
-    (counsel-projectile-switch-project))
-  (def-projectile-commander-method ?t
-    "Find test file in project."
-    (projectile-find-test-file))
-  (def-projectile-commander-method ?\C-?
-    "Go back to project selection."
-    (projectile-switch-project)))
-
-
-;; -----------------------------------------------------------------------------
-;; NeoTree - A tree plugin like NerdTree for Vim
-;;
-(use-package neotree
-  :ensure t
-  :bind ("C-p" . neotree-toggle))
-
-
 ;; -----------------------------------------------------------------------------
 ;; duplicate-thing - bring up help for key bindings
 ;;
@@ -512,7 +334,7 @@
   ;; :ensure t
   ;; :demand t
   ;; :config
-  :bind ("M-C-<down>" . duplicate-thing))
+  :bind ("M-<return>" . duplicate-thing))
 
 
 ;; -----------------------------------------------------------------------------
@@ -536,30 +358,33 @@
   (which-key-mode))
 
 
-;; test1
-;; (use-package doom-themes
-;;   :ensure t
-;;   :config
-;;   (load-theme 'doom-one t))
+;; -----------------------------------------------------------------------------
+;; Doom-themes are a modern set of themes for emacs.
+;;
+(use-package doom-themes
+  :init
+  (load-theme 'doom-one t)
+  :config
+  (progn
+    (doom-themes-neotree-config)
+    (setq doom-neotree-line-spacing 0)
+    (doom-themes-org-config)))
 
-;; test2
-;; (use-package doom-themes
-;;   :init
-;;   (load-theme 'doom-one t)
-;;   :config
-;;   (progn
-;;     (doom-themes-neotree-config)
-;;     (setq doom-neotree-line-spacing 0)
-;;     (doom-themes-org-config)))
-
-;; test3
+;; -----------------------------------------------------------------------------
+;; doom modeline
 ;; (use-package doom-modeline
 ;;   :ensure t
-;;   :hook (after-init . doom-modeline-mode))
+;;   :hook (after-init . doom-modeline-mode)
+;;   :init
+;;   (setq doom-modeline-project-detection 'project))
 
-;; test4
-;; (use-package all-the-icon
-;;   :ensure t)
+
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 4)))
+
+
 
 ;; -----------------------------------------------------------------------------
 ;; Package: undo-tree
@@ -570,6 +395,34 @@
   (global-undo-tree-mode 1))
 
 
+;; -----------------------------------------------------------------------------
+;; Package: clean-aindent-mode
+;; Simple indent, if activated, will bypass the default language dependent indentation
+;; of ‘newline-and-indent’.
+;;
+(use-package clean-aindent-mode
+  :init
+  (add-hook 'prog-mode-hook 'clean-aindent-mode))
+
+
+;; -----------------------------------------------------------------------------
+;; Package: dtrt-indent
+;;
+(use-package dtrt-indent
+  :init
+  (dtrt-indent-mode 1)
+  (setq dtrt-indent-verbosity 0))
+
+
+;; -----------------------------------------------------------------------------
+;; PACKAGE: comment-dwim-2
+;;
+(use-package comment-dwim-2
+  :bind (("M-;" . comment-dwim-2))
+  )
+
+
+;;(set-background-color "blue")
 ;; -----------------------------------------------------------------------------
 ;; PACKAGE: iedit
 ;;
@@ -606,6 +459,65 @@
   (message (buffer-file-name)))
 
 (global-set-key [C-f1] 'show-file-name) ; Or any other key you want
+
+
+;; ----------------------------------------------------------------------------
+;; Projectile
+;;
+;; (use-package projectile
+;;   :init (projectile-global-mode)
+;;   :bind
+;;   ("C-c p" . projectile-switch-project))
+;; ;;  ("C-c z" . helm-projectile-ag)
+;; ;;  ("C-c f" . helm-projectile))
+
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'helm))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "c:/Projekte")
+    (setq projectile-project-search-path '("c:/Projekte")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+
+;; ----------------------------------------------------------------------------
+;; Semantic
+;;  http://tuhdo.github.io/c-ide.html#sec-9-2
+;;
+(require 'semantic)
+(global-semanticdb-minor-mode 1)
+(global-semantic-idle-scheduler-mode 1)
+
+(global-semantic-idle-summary-mode 1)
+;; Semantic Sticky Function minor mode displays a header line that shows
+;; the declaration line of the function or tag on the topmost line in the text area.
+(add-to-list 'semantic-default-submodes 'global-semantic-stickyfunc-mode)
+(add-to-list 'semantic-default-submodes 'global-semantic-idle-scheduler-mode)
+;; Semantic Idle Summary mode is a minor mode that displays a short summary of the
+;; symbol at point, such as its function prototype
+(add-to-list 'semantic-default-submodes 'global-semantic-idle-summary-mode)
+(add-to-list 'semantic-default-submodes 'global-semantic-idle-local-symbol-highlight-mode)
+(add-to-list 'semantic-default-submodes 'global-semantic-highlight-func-mode)
+(add-to-list 'semantic-default-submodes 'global-semantic-decoration-mode)
+(semantic-mode 1)
+
+
+;; -----------------------------------------------------------------------------
+;; NeoTree - A tree plugin like NerdTree for Vim
+;;
+(use-package neotree
+  :ensure t
+  :config
+  (progn
+    (setq neo-smart-open t)
+    (setq neo-window-fixed-size nil))
+  :bind
+  ("C-p" . neotree-toggle)
+  ("C-c n" . neotree-projectile-action))
 
 
 ;; -----------------------------------------------------------------------------
@@ -689,7 +601,6 @@
     (global-set-key (kbd "C-x C-f") 'helm-find-files)
     (global-set-key (kbd "C-c r") 'helm-recentf)
     (global-set-key (kbd "C-h SPC") 'helm-all-mark-rings)
-    (global-set-key (kbd "C-c h o") 'helm-occur)
     (global-set-key (kbd "C-c h o") 'helm-occur)
 
 ;;    (global-set-key (kbd "C-c h w") 'helm-wikipedia-suggest)
@@ -791,6 +702,8 @@
       (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
       (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history))))
 
+
+;; -----------------------------------------------------------------------------
 ;; ORG Mode
 ;;
 (use-package org
@@ -937,7 +850,6 @@
                                     '(("\\<\\(FIXME\\|TODO\\|ToDo\\|XXX\\|???\\|BUG\\)" 1 font-lock-warning-face t)))))
 
 
-
 ;; -----------------------------------------------------------------------------
 ;; open corresponding header file
 ;;
@@ -953,6 +865,12 @@
 (use-package modern-cpp-font-lock
   :ensure t)
 
+
+
+;;(use-package cc-mode
+;;  :init
+  ;;(define-key c-mode-map  [(tab)] 'company-complete)
+ ; ;  (define-key c++-mode-map  [(tab)] 'company-complete))
 
 ;; -----------------------------------------------------------------------------
 ;; ESC Key redefine
@@ -1023,6 +941,17 @@
         '(("en" . "de") ("de" . "en"))))
 
 
+;; -----------------------------------------------------------------------------
+;; Package zygospore
+;; A simple package for undoing the delete-other-windows command.
+;; Convenient for needing more space in one buffer temporarily
+;; or not having to worry about losing a specific setup.
+;;
+(use-package zygospore
+  :bind (("C-x 1" . zygospore-toggle-delete-other-windows)
+         ("RET" .   newline-and-indent)))
+
+
 ;; ------------------------------------------------------------------------------
 ;; Woche im calendar
 ;;
@@ -1078,6 +1007,140 @@
 
 (global-set-key (kbd "C-a") 'prelude-move-beginning-of-line)
 
+(defadvice kill-ring-save (before slick-copy activate compile)
+  "When called interactively with no active region, copy a single
+line instead."
+  (interactive
+   (if mark-active (list (region-beginning) (region-end))
+     (message "Copied line")
+     (list (line-beginning-position)
+           (line-beginning-position 2)))))
+
+(defadvice kill-region (before slick-cut activate compile)
+  "When called interactively with no active region, kill a single
+  line instead."
+  (interactive
+   (if mark-active (list (region-beginning) (region-end))
+     (list (line-beginning-position)
+           (line-beginning-position 2)))))
+
+;; kill a line, including whitespace characters until next non-whiepsace character
+;; of next line
+(defadvice kill-line (before check-position activate)
+  (if (member major-mode
+              '(emacs-lisp-mode scheme-mode lisp-mode
+                                c-mode c++-mode objc-mode
+                                latex-mode plain-tex-mode))
+      (if (and (eolp) (not (bolp)))
+          (progn (forward-char 1)
+                 (just-one-space 0)
+                 (backward-char 1)))))
+
+;; taken from prelude-editor.el
+;; automatically indenting yanked text if in programming-modes
+(defvar yank-indent-modes
+  '(LaTeX-mode TeX-mode)
+  "Modes in which to indent regions that are yanked (or yank-popped).
+Only modes that don't derive from `prog-mode' should be listed here.")
+
+(defvar yank-indent-blacklisted-modes
+  '(python-mode slim-mode haml-mode)
+  "Modes for which auto-indenting is suppressed.")
+
+(defvar yank-advised-indent-threshold 1000
+  "Threshold (# chars) over which indentation does not automatically occur.")
+
+(defun yank-advised-indent-function (beg end)
+  "Do indentation, as long as the region isn't too large."
+  (if (<= (- end beg) yank-advised-indent-threshold)
+      (indent-region beg end nil)))
+
+(defadvice yank (after yank-indent activate)
+  "If current mode is one of 'yank-indent-modes,
+indent yanked text (with prefix arg don't indent)."
+  (if (and (not (ad-get-arg 0))
+           (not (member major-mode yank-indent-blacklisted-modes))
+           (or (derived-mode-p 'prog-mode)
+               (member major-mode yank-indent-modes)))
+      (let ((transient-mark-mode nil))
+        (yank-advised-indent-function (region-beginning) (region-end)))))
+
+(defadvice yank-pop (after yank-pop-indent activate)
+  "If current mode is one of `yank-indent-modes',
+indent yanked text (with prefix arg don't indent)."
+  (when (and (not (ad-get-arg 0))
+             (not (member major-mode yank-indent-blacklisted-modes))
+             (or (derived-mode-p 'prog-mode)
+                 (member major-mode yank-indent-modes)))
+    (let ((transient-mark-mode nil))
+      (yank-advised-indent-function (region-beginning) (region-end)))))
+
+;; prelude-core.el
+(defun indent-buffer ()
+  "Indent the currently visited buffer."
+  (interactive)
+  (indent-region (point-min) (point-max)))
+
+;; prelude-editing.el
+(defcustom prelude-indent-sensitive-modes
+  '(coffee-mode python-mode slim-mode haml-mode yaml-mode)
+  "Modes for which auto-indenting is suppressed."
+  :type 'list)
+
+(defun indent-region-or-buffer ()
+  "Indent a region if selected, otherwise the whole buffer."
+  (interactive)
+  (unless (member major-mode prelude-indent-sensitive-modes)
+    (save-excursion
+      (if (region-active-p)
+          (progn
+            (indent-region (region-beginning) (region-end))
+            (message "Indented selected region."))
+        (progn
+          (indent-buffer)
+          (message "Indented buffer.")))
+      (whitespace-cleanup))))
+
+(global-set-key (kbd "C-c i") 'indent-region-or-buffer)
+
+;; add duplicate line function from Prelude
+;; taken from prelude-core.el
+(defun prelude-get-positions-of-line-or-region ()
+  "Return positions (beg . end) of the current line
+or region."
+  (let (beg end)
+    (if (and mark-active (> (point) (mark)))
+        (exchange-point-and-mark))
+    (setq beg (line-beginning-position))
+    (if mark-active
+        (exchange-point-and-mark))
+    (setq end (line-end-position))
+    (cons beg end)))
+
+;; smart openline
+(defun prelude-smart-open-line (arg)
+  "Insert an empty line after the current line.
+Position the cursor at its beginning, according to the current mode.
+With a prefix ARG open line above the current line."
+  (interactive "P")
+  (if arg
+      (prelude-smart-open-line-above)
+    (progn
+      (move-end-of-line nil)
+      (newline-and-indent))))
+
+(defun prelude-smart-open-line-above ()
+  "Insert an empty line above the current line.
+Position the cursor at it's beginning, according to the current mode."
+  (interactive)
+  (move-beginning-of-line nil)
+  (newline-and-indent)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(global-set-key (kbd "M-o") 'prelude-smart-open-line)
+(global-set-key (kbd "M-o") 'open-line)
+
 
 ;;------------------------------------------------------------------------------
 ;; prelude-core.el
@@ -1114,13 +1177,113 @@
 
 
 ;; Compilation
-(global-set-key (kbd "<f5>") (lambda ()
-                               (interactive)
-                               (setq-local compilation-read-command nil)
-                               (call-interactively 'compile)))
+;; (global-set-key (kbd "<f5>") (lambda ()
+;;                                (interactive)
+;;                                (setq-local compilation-read-command nil)
+;;                                (call-interactively 'compile)))
+
+;; -----------------------------------------------------------------------------
+;; bookmarks - visible bookmarks in buffer
+;; https://github.com/joodland/bm
+;;
+(use-package bm
+  :ensure t
+  :demand t
+
+  :init
+  (setq bm-restore-repository-on-load t)  ;;restore on load (even before you require bm)
+
+  :config
+  (setq bm-cycle-all-buffers t)                        ;; Allow cross-buffer 'next'
+  (setq bm-repository-file "~/.emacs.d/bm-repository") ;;where to store persistant files
+  (setq-default bm-buffer-persistence t)               ;; save bookmarks
+  (add-hook' after-init-hook 'bm-repository-load)      ;; Loading the repository from file when on start up
+  (add-hook 'find-file-hooks 'bm-buffer-restore)       ;; Restoring bookmarks when on file find.
+  (add-hook 'kill-buffer-hook 'bm-buffer-save)         ;; Saving bookmarks
+
+  ;; Saving the repository to file when on exit.
+  ;; kill-buffer-hook is not called when Emacs is killed, so we
+  ;; must save all bookmarks first.
+  (add-hook 'kill-emacs-hook '(lambda nil
+				(bm-buffer-save-all)
+				(bm-repository-save)))
+
+  ;; The `after-save-hook' is not necessary to use to achieve persistence,
+  ;; but it makes the bookmark data in repository more in sync with the file
+  ;; state.
+  (add-hook 'after-save-hook #'bm-buffer-save)
+
+  ;; Restoring bookmarks
+  (add-hook 'find-file-hooks   #'bm-buffer-restore)
+  (add-hook 'after-revert-hook #'bm-buffer-restore)
+
+  ;; The `after-revert-hook' is not necessary to use to achieve persistence,
+  ;; but it makes the bookmark data in repository more in sync with the file
+  ;; state. This hook might cause trouble when using packages
+  ;; that automatically reverts the buffer (like vc after a check-in).
+  ;; This can easily be avoided if the package provides a hook that is
+  ;; called before the buffer is reverted (like `vc-before-checkin-hook').
+  ;; Then new bookmarks can be saved before the buffer is reverted.
+  ;; Make sure bookmarks is saved before check-in (and revert-buffer)
+  (add-hook 'vc-before-checkin-hook #'bm-buffer-save)
+
+  :bind (("C-n" . bm-next)
+         ("M-n" . bm-previous)
+         ("<f5>" . bm-toggle)
+         ("C-<f5>" . bm-remove-all-all-buffers)))
 
 
 
+;;(use-package rainbow-delimiters
+;;  :hook (prog-mode . rainbow-delimiters-mode))
+
+;; -----------------------------------------------------------------------------
+;; DON'T WORK FOR ME!
+;;(use-package sublimity
+;;  :ensure t
+;;  :config
+;;  (sublimity-mode 1))
+
+
+;; minimap.  see also sublimity, with different bugs
+;; (use-package minimap
+;;   :init
+;;   (progn
+;;     (setq minimap-major-modes '(prog-mode text-mode)
+;;           minimap-window-location 'right)
+;;     (defface minimap-active-region-background
+;;       '((((background dark)) (:background "#660000"))
+;;         (t (:background "#C847D8FEFFFF")))
+;;       "Face for the active region in the minimap.
+;;                                         By default, this is only a different background color."
+;;       :group 'minimap)))
+
+;; -----------------------------------------------------------------------------
+;; ispell
+;;
+(use-package ispell
+  :config
+  (setq ispell-program-name "C:/tools/hunspell-1.3.2-3-w32-bin/bin/hunspell.exe")
+  ;;(setq ispell-local-dictionary "en_US")
+  (add-to-list 'ispell-local-dictionary-alist '("deutsch-hunspell"
+                                              "[[:alpha:]]"
+                                              "[^[:alpha:]]"
+                                              "[']"
+                                              t
+                                              ("-d" "de_DE"); Dictionary file name
+                                              nil
+                                              iso-8859-1))
+  (add-to-list 'ispell-local-dictionary-alist '("english-hunspell"
+                                              "[[:alpha:]]"
+                                              "[^[:alpha:]]"
+                                              "[']"
+                                              t
+                                              ("-d" "en_US")
+                                              nil
+                                              iso-8859-1))
+  (setq ispell-dictionary   "deutsch-hunspell"))
+  ;;(setq ispell-local-dictionary-alist
+  ;;      '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US") nil utf-8))))
 
 (use-package zoom
   :init
@@ -1143,5 +1306,4 @@
 (load custom-file)
 
 ;;; init.el ends here
-
 

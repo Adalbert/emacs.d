@@ -78,7 +78,14 @@
 (add-hook 'c-mode-common-hook
           (lambda ()
             (font-lock-add-keywords nil
-                                    '(("\\<\\(FIXME\\|TODO\\|ToDo\\|XXX\\|???\\|BUG\\)" 1 font-lock-warning-face t)))))
+                                    '(("\\<\\(FIXME\\|TODO\\|ToDo\\|XXX\\|???\\|BUG\\)"
+                                       1 font-lock-warning-face t)))))
+
+
+;; -----------------------------------------------------------------------------
+;; (add-hook 'c++-mode-hook #'modern-c++-font-lock-mode)
+(use-package modern-cpp-font-lock
+  :ensure t)
 
 
 ;; -----------------------------------------------------------------------------
