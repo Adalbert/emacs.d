@@ -79,7 +79,7 @@
 ;; -----------------------------------------------------------------------------
 ;; Turn off unnecessary graphical features
 ;;
-;;(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 ;;(set-fringe-mode 10)        ; Give some breathing room
