@@ -521,6 +521,16 @@
 
 
 ;; -----------------------------------------------------------------------------
+;; Yasnippet
+;;
+(use-package yasnippet
+  :ensure t
+  ;;  :init
+  :config
+  (yas-global-mode 1))
+
+
+;; -----------------------------------------------------------------------------
 ;; NeoTree - A tree plugin like NerdTree for Vim
 ;;
 (use-package neotree
@@ -1319,6 +1329,8 @@ Position the cursor at it's beginning, according to the current mode."
 ;; Keep emacs Custom-settings in separate file
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file)
+
+
 
 ;;; init.el ends here
 
