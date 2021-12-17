@@ -54,6 +54,19 @@
 ;;(load-theme 'tango-dark)       ;; dark background thema
 ;;(set-cursor-color "#77ff00")   ;; set cursor color to white
 
+;; test csv
+(setq csv-separators '(";" "    "))
+(add-hook 'csv-mode-hook
+          (lambda ()
+            (define-key csv-mode-map (kbd "C-c C-M-a")
+              (defun csv-align-visible (&optional arg)
+                "Align visible fields"
+                (interactive "P")
+                (csv-align-fields nil (window-start) (window-end))
+                )
+              )
+            )
+          )
 
 ;; -----------------------------------------------------------------------------
 ;; Font
@@ -99,6 +112,7 @@
       kept-new-versions 20
       kept-old-versions 10
       version-control t
+      auto-save-default nil
       backup-directory-alist
       `(("." . ,(expand-file-name
 		 (concat user-emacs-directory "backups")))))
@@ -291,9 +305,9 @@
 	       ("u" . dired-subtree-unmark-subtree)
 	       ("C-o C-f" . dired-subtree-only-this-file)
 	       ("C-o C-d" . dired-subtree-only-this-directory)))
-  (use-package dired-quick-sort
-    :init
-    (dired-quick-sort-setup))
+  (use-package dired-quick-sort)
+;;    :init
+;;    (dired-quick-sort-setup))
   (use-package dired-collapse
     :hook dired-mode))
 
@@ -598,6 +612,7 @@
     (global-set-key (kbd "M-x") 'helm-M-x)
     (global-set-key (kbd "M-y") 'helm-show-kill-ring)
     (global-set-key (kbd "C-x b") 'helm-buffers-list)
+    (global-set-key (kbd "C-c c") 'helm-projectile)
     (global-set-key (kbd "C-x C-f") 'helm-find-files)
     (global-set-key (kbd "C-c r") 'helm-recentf)
     (global-set-key (kbd "C-h SPC") 'helm-all-mark-rings)
@@ -834,7 +849,7 @@
   (c-make-macro-with-semi-re)
 
   (auto-fill-mode)
-  (electric-pair-mode 1)		;; turn on automatic bracket insertion by pairs. New in emacs 24
+  ;;(electric-pair-mode nil)		;; turn on automatic bracket insertion by pairs. New in emacs 24
   (c-toggle-auto-hungry-state -1)       ;; chnaged 16.02.2017, from 1 -> -1
   (local-set-key (kbd "C-d") 'kill-whole-line))
 
@@ -847,7 +862,7 @@
 (add-hook 'c-mode-common-hook
           (lambda ()
             (font-lock-add-keywords nil
-                                    '(("\\<\\(FIXME\\|TODO\\|ToDo\\|XXX\\|???\\|BUG\\)" 1 font-lock-warning-face t)))))
+                                    '(("\\<\\(FIXME\\|bla\\|TODO\\|ToDo\\|XXX\\|BUG\\)" 1 font-lock-warning-face t)))))
 
 
 ;; -----------------------------------------------------------------------------
