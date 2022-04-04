@@ -48,6 +48,10 @@
    (eq system-type 'cygwin)))
 
 
+;; (defconst *sys/win32*
+;;   (eq system-type 'windows-nt)
+;;   "Are we running on a WinTel system?")
+
 ;; -----------------------------------------------------------------------------
 ;; Theme
 ;;
@@ -157,12 +161,11 @@
 
 
 ;; -----------------------------------------------------------------------------
-;; Nice scrolling
+;; Smooth scrolling (line by line) instead of jumping by half-screens.
 ;;
-(require 'smooth-scrolling)
-(smooth-scrolling-mode 1)
-(setq smooth-scroll-margin 5)
-
+(use-package smooth-scrolling
+  :config
+  (smooth-scrolling-mode 1))
 
 ;; -----------------------------------------------------------------------------
 ;; show unncessary whitespace that can mess up your diff
@@ -384,6 +387,21 @@
     (setq doom-neotree-line-spacing 0)
     (doom-themes-org-config)))
 
+;; (use-package doom-themes
+;;   :custom-face
+;;   (cursor ((t (:background "BlanchedAlmond"))))
+;;   :config
+;;   ;; flashing mode-line on errors
+;;   (doom-themes-visual-bell-config)
+;;   ;; Corrects (and improves) org-mode's native fontification.
+;;   (doom-themes-org-config)
+;;   (load-theme 'doom-one t)
+;;   (defun switch-theme ()
+;;     "An interactive funtion to switch themes."
+;;     (interactive)
+;;     (disable-theme (intern (car (mapcar #'symbol-name custom-enabled-themes))))
+;;     (call-interactively #'load-theme)))
+
 ;; -----------------------------------------------------------------------------
 ;; doom modeline
 ;; (use-package doom-modeline
@@ -392,13 +410,22 @@
 ;;   :init
 ;;   (setq doom-modeline-project-detection 'project))
 
+;; (use-package doom-modeline
+;;   :custom
+;;   ;; Don't compact font caches during GC. Windows Laggy Issue
+;;   (inhibit-compacting-font-caches t)
+;;   (doom-modeline-minor-modes t)
+;;   (doom-modeline-icon t)
+;;   (doom-modeline-major-mode-color-icon t)
+;;   (doom-modeline-height 15)
+;;   :config
+;;   (doom-modeline-mode))
+
 
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 4)))
-
-
+  :custom ((doom-modeline-height 15)))
 
 ;; -----------------------------------------------------------------------------
 ;; Package: undo-tree
@@ -495,6 +522,9 @@
   ;; NOTE: Set this to the folder where you keep your Git repos!
   (when (file-directory-p "c:/Projekte")
     (setq projectile-project-search-path '("c:/Projekte")))
+  ;; (when (and *sys/win32*
+  ;;            (executable-find "tr"))
+  ;;   (setq projectile-indexing-method 'alien))
   (setq projectile-switch-project-action #'projectile-dired))
 
 
@@ -525,9 +555,17 @@
 ;;
 (use-package yasnippet
   :ensure t
-  ;;  :init
-  :config
+  :init
   (yas-global-mode 1))
+
+
+;; -----------------------------------------------------------------------------
+;; Flycheck
+;;
+(use-package flycheck
+  :ensure t
+  :init
+  (global-flycheck-mode 1))
 
 
 ;; -----------------------------------------------------------------------------
@@ -828,8 +866,21 @@
   (add-to-list 'company-backends 'company-gtags)
   (add-to-list 'company-backends 'company-c-headers)
   (setq company-show-numbers t)
+  (setq company-tooltip-align-annotations t)  ;; 11.01.2022
+  (setq company-tooltip-flip-when-above t)    ;; 11.01.2022
   (setq company-tooltip-limit 10)
   (setq company-idle-delay 0.5))
+
+
+;; -----------------------------------------------------------------------------
+;; company-quickhelp (11.01.2022)
+;;
+(use-package company-quickhelp
+  :ensure t
+  :init
+  (company-quickhelp-mode 1)
+  (use-package pos-tip
+    :ensure t))
 
 
 ;; -----------------------------------------------------------------------------
@@ -888,8 +939,10 @@
 ;; (user defined types, functions, etc.) and indentation.
 ;;
 (use-package modern-cpp-font-lock
+  
+  :diminish t
+  :init (modern-c++-font-lock-global-mode t)
   :ensure t)
-
 
 
 ;;(use-package cc-mode
@@ -1331,6 +1384,218 @@ Position the cursor at it's beginning, according to the current mode."
 (load custom-file)
 
 
+;;(require 'header2)
+
+;;(defsubst my/header-timestamp ()
+;;  "Insert field for timestamp"
+;;  (insert header-prefix-string  "Time-stamp: <>\n"))
+;; 
+;;(defsubst my/header-projectname ()
+;;  "Insert Project Name"
+;;  (insert header-prefix-string "Project    : "
+;;          (when (featurep 'projectile)
+;;            (replace-regexp-in-string "/proj/\\(.*?\\)/.*"
+;;                                      "\\1"
+;;                                      (projectile-project-root)))
+;;          "\n"))
+;; 
+;;(defsubst my/header-description ()
+;;  "Insert \"Description: \" line."
+;;  (insert header-prefix-string "Description: \n"))
+;; 
+;;(defsubst my/header-dash-line ()
+;;  "Insert dashed line"
+;;  (insert header-prefix-string)
+;;  (insert-char ?- fill-column)
+;;  (insert "\n"))
+;; 
+;;(setq make-header-hook '(my/header-timestamp
+;;                         header-blank
+;;                         my/header-dash-line
+;;                         my/header-projectname
+;;                         header-file-name
+;;                         header-author
+;;                         my/header-description
+;;                         my/header-dash-line))
+;; 
+;;(add-hook 'emacs-lisp-mode-hook #'auto-make-header)
+;;(add-hook 'prog-mode-hook #'auto-make-header)
+
+
+(use-package header2
+  :load-path (lambda () (expand-file-name "elisp/header2" user-emacs-directory))
+  :custom
+;;  (header-copyright-notice (concat "Copyright (C) 2019 " (user-full-name) "\n"))
+  :hook (emacs-lisp-mode . auto-make-header)
+  :config
+  (add-to-list 'write-file-functions 'auto-update-file-header)
+  (autoload 'auto-make-header "header2")
+  (autoload 'auto-update-file-header "header2"))
+
+
+;; (use-package header2
+;;   :load-path "elisp/header2"
+;;   :defer 10
+;;   :config
+;;   (progn
+
+;;     (defconst modi/header-sep-line-char ?-
+;;       "Character to be used for creating separator lines in header.")
+
+;;     (defconst modi/auto-headers-hooks '(prog-mode-hook
+;;                                         sa-c-mode-hook
+;;                                         c-mode-common-hook
+;;                                         Verilog-mode-hook
+;;                                         python-mode-hook
+;;                                         sh-mode-hook
+;;                                         cperl-mode-hook)
+;;       "List of hooks of major modes in which headers should be auto-inserted.")
+
+;;     (defvar modi/header-timestamp-cond (lambda () t)
+;;       "This variable should be set to a function that returns a non-nil
+;; value only when the time stamp is supposed to be inserted. By default, it's
+;; a `lambda' return `t', so the time stamp is always inserted.")
+
+;;     (defvar modi/header-version-cond (lambda () t)
+;;       "This variable should be set to a function that returns a non-nil
+;; value only when the version fields are supposed to be inserted. By default, it's
+;; a `lambda' return `t', so the version fields are always inserted.")
+
+;;     (defun modi/turn-on-auto-headers ()
+;;       "Turn on auto headers only for specific modes."
+;;       (interactive)
+;;       (dolist (hook modi/auto-headers-hooks)
+;;         (add-hook hook #'auto-make-header)))
+
+;;     (defun modi/turn-off-auto-headers ()
+;;       "Turn off auto headers only for specific modes."
+;;       (interactive)
+;;       (dolist (hook modi/auto-headers-hooks)
+;;         (remove-hook hook #'auto-make-header)))
+
+;;     (defun modi/header-multiline ()
+;;       "Insert multiline comment. The comment text is in `header-multiline' var."
+;;       (let ((lineno  1)
+;;             beg end nb-lines)
+;;         (beginning-of-line)
+;;         (if (nonempty-comment-end)
+;;             (insert "\n" comment-start)
+;;           ;; (header-blank)
+;;           (insert header-prefix-string))
+;;         (setq beg  (point))
+;;         (insert header-multiline)
+;;         (setq end       (point-marker)
+;;               nb-lines  (count-lines beg end))
+;;         (goto-char beg)
+;;         (forward-line 1)
+;;         (while (< lineno nb-lines)
+;;           (insert header-prefix-string)
+;;           (forward-line 1)
+;;           (setq lineno  (1+ lineno)))
+;;         (goto-char end)
+;;         (when (nonempty-comment-end) (insert "\n"))
+;;         (insert comment-end)
+;;         (insert "\n")))
+
+;;     (defsubst modi/header-sep-line ()
+;;       "Insert separator line"
+;;       (insert header-prefix-string)
+;;       (insert-char modi/header-sep-line-char (- fill-column (current-column)))
+;;       (insert "\n"))
+
+;;     (defsubst modi/header-timestamp ()
+;;       "Insert field for time stamp."
+;;       (when (funcall modi/header-timestamp-cond)
+;;         (insert header-prefix-string "Time-stamp: <>\n")
+;;         (header-blank)))
+
+;;     (defsubst modi/header-projectname ()
+;;       "Insert \"Project\" line."
+;;       (insert header-prefix-string "Project            : "
+;;               (when (and (featurep 'projectile)
+;;                          (projectile-project-root))
+;;                 (replace-regexp-in-string "/proj/\\(.*?\\)/.*"
+;;                                           "\\1"
+;;                                           (projectile-project-root)))
+;;               "\n"))
+
+;;     (defsubst modi/header-file-name ()
+;;       "Insert \"File Name\" line, using buffer's file name."
+;;       (insert header-prefix-string "File Name          : "
+;;               (if (buffer-file-name)
+;;                   (file-name-nondirectory (buffer-file-name))
+;;                 (buffer-name))
+;;               "\n"))
+
+;;     (defsubst modi/header-author ()
+;;       "Insert current user's name (`user-full-name') as this file's author."
+;;       (insert header-prefix-string
+;;               "Original Author    : "
+;;               (replace-regexp-in-string " " "." (user-full-name)) ;"Foo Bar" -> "Foo.Bar"
+;;               "@"
+;;               (replace-regexp-in-string ".*?\\(\\w+\\.\\w+\\)$" "\\1"
+;;                                         (getenv "HOST"))
+;;               "\n"))
+
+;;     (defsubst modi/header-description ()
+;;       "Insert \"Description\" line."
+;;       (insert header-prefix-string "Description        : \n"))
+
+;;     (defsubst modi/header-copyright ()
+;;       "Insert the copyright block using `modi/header-multiline'.
+;; The copyright block will inserted only if the value of `header-copyright-notice'
+;; is non-nil."
+;;       (let ((header-multiline header-copyright-notice))
+;;         (modi/header-multiline)))
+
+;;     (defsubst modi/header-version ()
+;;       "Insert version info fields that will be auto-updated by SVN."
+;;       (when (funcall modi/header-version-cond)
+;;         (insert header-prefix-string "SVN Revision       : $Rev$\n")
+;;         (insert header-prefix-string "Last Commit Date   : $Date$\n")
+;;         (insert header-prefix-string "Last Commit Author : $Author$\n")
+;;         (modi/header-sep-line)))
+
+;;     (defsubst modi/header-position-point ()
+;;       "Position the point at a particular point in the file.
+;; Bring the point 2 lines below the current point."
+;;       (forward-line 0)
+;;       (newline 2))
+
+;;     (setq make-header-hook '(modi/header-timestamp        ; // Time-stamp: <>
+;;                              modi/header-sep-line         ; // ---------------
+;;                              modi/header-projectname      ; // Project
+;;                              modi/header-file-name        ; // File Name
+;;                              modi/header-author           ; // Original Author
+;;                              modi/header-description      ; // Description
+;;                              modi/header-sep-line         ; // ---------------
+;;                              modi/header-version          ; // Revision
+;;                              modi/header-copyright        ; // Copyright (c)
+;;                              modi/header-sep-line         ; // ---------------
+;;                              modi/header-position-point))
+
+;;     (modi/turn-on-auto-headers)))
+
+
+;; (use-package hackernews
+;;   :commands (hackernews)
+;;   :bind (("C-c h" . hackernews)
+;;          ("C-c g" . hackernews)))
+
+;;(use-package speed-type
+;;  :commands (speed-type-text))
+
+
+;; -----------------------------------------------------------------------------
+;; Line Numbers
+;; Display line numbers, and column numbers in modeline.
+;; Hook line numbers to only when files are opened, also use linum-mode for emacs-version< 26
+(if (version< emacs-version "26")
+    (global-linum-mode)
+  (add-hook 'text-mode-hook #'display-line-numbers-mode)
+  (add-hook 'prog-mode-hook #'display-line-numbers-mode))
+;; Display column numbers in modeline
+(column-number-mode 1)
 
 ;;; init.el ends here
 
