@@ -3,6 +3,67 @@
 ;; This file allows Emacs to initialize my customizations
 ;; in Emacs lisp embedded in *one* literate Org-mode file.
 
+
+
+;; -----------------------------------------------------------------------------
+;; * General Configuration
+;; ** User Interface
+;; *** Clean up Emacs user interface,  make it more minimal
+
+;;
+;; Startup Messages
+;;
+(setq inhibit-startup-message t )
+
+;; -----------------------------------------------------------------------------
+;; Turn off unnecessary graphical features
+;;
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(menu-bar-mode -1)
+(tooltip-mode -1)
+
+(set-fringe-mode 10)        ; Give some breathing room
+
+
+;; -----------------------------------------------------------------------------
+;; Bell
+;;(setq ring-bell-function 'ignore)
+(setq visible-bell t)
+
+
+;; -----------------------------------------------------------------------------
+;; Font
+;;
+;;(set-face-attribute 'default nil :height 90);;93
+;;(setq-default line-spacing 0)
+(set-face-attribute 'default nil :font "Fira Mono:antialias=subpixel" :height 90)
+
+
+;; -----------------------------------------------------------------------------
+;; Initialize package sources
+;; Use Package
+;;
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ;; ("melpa-stable" . "https://stable.melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+(setq load-prefer-newer t)
+
+;; Initialize use-package
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+
+
+
+
+
 ;; This sets up the load path so that we can override it
 (package-initialize nil)
 ;; Override the packages with the git version of Org and other packages
@@ -18,19 +79,6 @@
 (setq gc-cons-threshold 100000000)
 
 
-;; -----------------------------------------------------------------------------
-;; Use Package
-;;
-(require 'package)
-(setq package-archives
-      '(("gnu" . "https://elpa.gnu.org/packages/")
-	("melpa" . "https://melpa.org/packages/")))
-(setq load-prefer-newer t)
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-(require 'use-package)
-(setq use-package-always-ensure t)
 
 
 ;; -----------------------------------------------------------------------------
@@ -72,13 +120,6 @@
             )
           )
 
-;; -----------------------------------------------------------------------------
-;; Font
-;;
-(set-face-attribute 'default nil :height 90);;93
-;;(set-default-font "Inconsolata-11")
-(setq-default line-spacing 0)
-
 
 ;; -----------------------------------------------------------------------------
 ;; misc useful keybindings
@@ -91,22 +132,6 @@
 ;; Prettify Symbols
 ;;
 (global-prettify-symbols-mode +1)
-
-
-;; -----------------------------------------------------------------------------
-;; Turn off unnecessary graphical features
-;;
-(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
-(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-;;(set-fringe-mode 10)        ; Give some breathing room
-
-;; -----------------------------------------------------------------------------
-;; Startup Messages
-;;
-(setq inhibit-startup-message t
-      initial-scratch-message ""
-      inhibit-startup-echo-area-message t)
 
 
 ;; -----------------------------------------------------------------------------
@@ -125,11 +150,6 @@
 ;; -----------------------------------------------------------------------------
 ;; Yes or Not
 (fset 'yes-or-no-p 'y-or-n-p)
-
-
-;; -----------------------------------------------------------------------------
-;; Bell
-(setq ring-bell-function 'ignore)
 
 
 ;; -----------------------------------------------------------------------------
@@ -158,7 +178,7 @@
 ;; Linum
 ;;
 (global-linum-mode)     ;; linum-mode - Zeile nummerierung
-
+(column-number-mode 1)
 
 ;; -----------------------------------------------------------------------------
 ;; Smooth scrolling (line by line) instead of jumping by half-screens.
@@ -250,6 +270,7 @@
            "C:/cygwin/usr/bin" ";"
            "C:/cygwin/bin" ";"
            "C:/tools/openjdk-14.0.2/bin" ";"
+           "c:/Qt/Qt5.15.2/5.15.2/msvc2019_64/include" ";"
            (getenv "PATH") ; inherited from OS
            )))
 
@@ -334,7 +355,7 @@
 ;;
 (use-package git-timemachine
   :ensure t
-  :bind (("C-x t" . git-timemachine)))
+  :bind (("C-x t t" . git-timemachine)))
 
 
 ;; -----------------------------------------------------------------------------
@@ -427,6 +448,7 @@
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 15)))
 
+
 ;; -----------------------------------------------------------------------------
 ;; Package: undo-tree
 ;; C-x u: undo tree vizualization
@@ -471,6 +493,11 @@
   :bind (("C-;" . iedit-mode))
   :init
   (setq iedit-toggle-key-default nil))
+
+
+;; -----------------------------------------------------------------------------
+;; Title Bar
+(setq-default frame-title-format '("SA-EMACS - " user-login-name "@" system-name " - %b"))
 
 
 ;; -----------------------------------------------------------------------------
@@ -567,6 +594,51 @@
   :init
   (global-flycheck-mode 1))
 
+;; (use-package dumb-jump
+;;   :bind
+;;   (:map prog-mode-map
+;;         (("C-c C-o" . dumb-jump-go-other-window)
+;;          ("C-c C-j" . dumb-jump-go)
+;;          ("C-c C-i" . dumb-jump-go-prompt)))
+;;   :custom (dumb-jump-selector 'helm))
+
+
+;; (use-package flycheck
+;;   :defer t
+;;   :diminish
+;;   :hook (after-init . global-flycheck-mode)
+;;   :commands (flycheck-add-mode)
+;;   :custom
+;;   (flycheck-global-modes
+;;    '(not outline-mode diff-mode shell-mode eshell-mode term-mode))
+;;   (flycheck-emacs-lisp-load-path 'inherit)
+;;   (flycheck-indication-mode (if (display-graphic-p) 'right-fringe 'right-margin))
+;;   :init
+;;   (if (display-graphic-p)
+;;       (use-package flycheck-posframe
+;;         :custom-face
+;;         (flycheck-posframe-face ((t (:foreground ,(face-foreground 'success)))))
+;;         (flycheck-posframe-info-face ((t (:foreground ,(face-foreground 'success)))))
+;;         :hook (flycheck-mode . flycheck-posframe-mode)
+;;         :custom
+;;         (flycheck-posframe-border-width 4)
+;;         (flycheck-posframe-inhibit-functions
+;;          '((lambda (&rest _) (bound-and-true-p company-backend)))))
+;;     (use-package flycheck-pos-tip
+;;       :defines flycheck-pos-tip-timeout
+;;       :hook (flycheck-mode . flycheck-pos-tip-mode)
+;;       :custom (flycheck-pos-tip-timeout 30)))
+;;   :config
+;;   (use-package flycheck-popup-tip
+;;     :hook (flycheck-mode . flycheck-popup-tip-mode))
+;;   (when (fboundp 'define-fringe-bitmap)
+;;     (define-fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
+;;       [16 48 112 240 112 48 16] nil nil 'center))
+;;   (when (executable-find "vale")
+;;     (use-package flycheck-vale
+;;       :config
+;;       (flycheck-vale-setup)
+;;       (flycheck-add-mode 'vale 'latex-mode))))
 
 ;; -----------------------------------------------------------------------------
 ;; NeoTree - A tree plugin like NerdTree for Vim
@@ -582,6 +654,62 @@
   ("C-c n" . neotree-projectile-action))
 
 
+
+;; (use-package treemacs
+;;   :init
+;;   (with-eval-after-load 'winum
+;;     (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+;;   :custom
+;;   (treemacs-collapse-dirs 3)
+;;   (treemacs-deferred-git-apply-delay 0.5)
+;;   (treemacs-display-in-side-window t)
+;;   (treemacs-file-event-delay 5000)
+;;   (treemacs-file-follow-delay 0.2)
+;;   (treemacs-follow-after-init t)
+;;   (treemacs-follow-recenter-distance 0.1)
+;;   (treemacs-git-command-pipe "")
+;;   (treemacs-goto-tag-strategy 'refetch-index)
+;;   (treemacs-indentation 2)
+;;   (treemacs-indentation-string " ")
+;;   (treemacs-is-never-other-window nil)
+;;   (treemacs-max-git-entries 5000)
+;;   (treemacs-no-png-images nil)
+;;   (treemacs-no-delete-other-windows t)
+;;   (treemacs-project-follow-cleanup nil)
+;;   (treemacs-persist-file (expand-file-name ".cache/treemacs-persist" user-emacs-directory))
+;;   (treemacs-recenter-after-file-follow nil)
+;;   (treemacs-recenter-after-tag-follow nil)
+;;   (treemacs-show-cursor nil)
+;;   (treemacs-show-hidden-files t)
+;;   (treemacs-silent-filewatch nil)
+;;   (treemacs-silent-refresh nil)
+;;   (treemacs-sorting 'alphabetic-desc)
+;;   (treemacs-space-between-root-nodes t)
+;;   (treemacs-tag-follow-cleanup t)
+;;   (treemacs-tag-follow-delay 1.5)
+;;   (treemacs-width 30)
+;;   :config
+;;   ;; The default width and height of the icons is 22 pixels. If you are
+;;   ;; using a Hi-DPI display, uncomment this to double the icon size.
+;;   ;;(treemacs-resize-icons 44)
+;;   (treemacs-follow-mode t)
+;;   (treemacs-filewatch-mode t)
+;;   (treemacs-fringe-indicator-mode t)
+;;   :bind
+;;   (("M-0"       . treemacs-select-window)
+;;    ("C-x t 1"   . treemacs-delete-other-windows)
+;;    ("C-x t t"   . treemacs)
+;;    ("C-x t B"   . treemacs-bookmark)
+;;    ("C-x t C-t" . treemacs-find-file)
+;;    ("C-x t M-t" . treemacs-find-tag))
+;;   (:map treemacs-mode-map ("C-p" . treemacs-previous-line)))
+
+
+;; (use-package treemacs-magit
+;;   :defer t
+;;   :after (treemacs magit))
+
+ 
 ;; -----------------------------------------------------------------------------
 ;; HELM
 ;;
@@ -943,7 +1071,6 @@
   :diminish t
   :init (modern-c++-font-lock-global-mode t)
   :ensure t)
-
 
 ;;(use-package cc-mode
 ;;  :init
@@ -1421,17 +1548,15 @@ Position the cursor at it's beginning, according to the current mode."
 ;;(add-hook 'emacs-lisp-mode-hook #'auto-make-header)
 ;;(add-hook 'prog-mode-hook #'auto-make-header)
 
-
 (use-package header2
   :load-path (lambda () (expand-file-name "elisp/header2" user-emacs-directory))
   :custom
-;;  (header-copyright-notice (concat "Copyright (C) 2019 " (user-full-name) "\n"))
+  (header-copyright-notice (concat "Copyright (C) 2019 " (user-full-name) "\n"))
   :hook (emacs-lisp-mode . auto-make-header)
   :config
   (add-to-list 'write-file-functions 'auto-update-file-header)
   (autoload 'auto-make-header "header2")
   (autoload 'auto-update-file-header "header2"))
-
 
 ;; (use-package header2
 ;;   :load-path "elisp/header2"
@@ -1576,26 +1701,32 @@ Position the cursor at it's beginning, according to the current mode."
 
 ;;     (modi/turn-on-auto-headers)))
 
-
-;; (use-package hackernews
-;;   :commands (hackernews)
-;;   :bind (("C-c h" . hackernews)
-;;          ("C-c g" . hackernews)))
-
-;;(use-package speed-type
-;;  :commands (speed-type-text))
-
-
 ;; -----------------------------------------------------------------------------
 ;; Line Numbers
 ;; Display line numbers, and column numbers in modeline.
 ;; Hook line numbers to only when files are opened, also use linum-mode for emacs-version< 26
-(if (version< emacs-version "26")
-    (global-linum-mode)
-  (add-hook 'text-mode-hook #'display-line-numbers-mode)
-  (add-hook 'prog-mode-hook #'display-line-numbers-mode))
-;; Display column numbers in modeline
-(column-number-mode 1)
+;; (if (version< emacs-version "26")
+;;     (global-linum-mode)
+;;   (add-hook 'text-mode-hook #'display-line-numbers-mode)
+;;   (add-hook 'prog-mode-hook #'display-line-numbers-mode))
+;; ;; Display column numbers in modeline
+;; (column-number-mode 1)
+
+
+(use-package zone
+  :ensure nil
+  :defer 5
+  :config
+  ;; (zone-when-idle 600) ; in seconds
+  (defun zone-choose (pgm)
+    "Choose a PGM to run for `zone'."
+    (interactive
+     (list
+      (completing-read
+       "Program: "
+       (mapcar 'symbol-name zone-programs))))
+    (let ((zone-programs (list (intern pgm))))
+      (zone))))
 
 ;;; init.el ends here
 
