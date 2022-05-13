@@ -4,6 +4,15 @@
 ;; in Emacs lisp embedded in *one* literate Org-mode file.
 
 
+;; -----------------------------------------------------------------------------
+;; User info
+;;
+(setq user-full-name "Adalbert Soborka"
+      user-mail-address "asoborka@gmx.de")
+
+(setq gc-cons-threshold 100000000)
+
+
 
 ;; -----------------------------------------------------------------------------
 ;; * General Configuration
@@ -59,6 +68,12 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+(use-package auto-package-update
+  :ensure t
+  :config
+  (setq auto-package-update-delete-old-versions t
+        auto-package-update-interval 4)
+  (auto-package-update-maybe))
 
 ;; This sets up the load path so that we can override it
 (package-initialize nil)
