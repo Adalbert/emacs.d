@@ -45,7 +45,7 @@
 ;; Font
 ;;
 ;;(set-face-attribute 'default nil :height 90);;93
-(set-face-attribute 'default nil :font "Fira Mono:antialias=subpixel" :height 88)
+(set-face-attribute 'default nil :font "Fira Mono:antialias=subpixel" :height 87)
 (setq-default line-spacing 3)
 
 
@@ -76,19 +76,21 @@
   (auto-package-update-maybe))
 
 ;; This sets up the load path so that we can override it
-(package-initialize nil)
+;; (package-initialize nil)
 ;; Override the packages with the git version of Org and other packages
 (add-to-list 'load-path "~/.emacs.d/site-lisp/org-mode/lisp/")
 
 
+(global-display-line-numbers-mode t)
+(column-number-mode 1)
+
 ;; -----------------------------------------------------------------------------
-;; User info
+;; Disable line numbers for some modes.
 ;;
-(setq user-full-name "Adalbert Soborka"
-      user-mail-address "asoborka@gmx.de")
-
-(setq gc-cons-threshold 100000000)
-
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 
 ;; -----------------------------------------------------------------------------
@@ -98,7 +100,7 @@
 ;;          Very similar to Helm's swoop package.
 (use-package ivy
   :diminish            ; vermindern
-  :bind (("C-s" . swiper)
+  :bind (("C-x s" . swiper)
          :map ivy-minibuffer-map
          ("TAB" . ivy-alt-done)
          ("C-l" . ivy-alt-done)
@@ -115,7 +117,163 @@
   (ivy-mode 1))
 
 
+;; -----------------------------------------------------------------------------
+;; misc useful keybindings
+;;
+(global-set-key (kbd "C-d") 'kill-whole-line)           ; Zeile löschen
+(global-set-key (kbd "<f12>") 'calculator)
+(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
 
+
+;; -----------------------------------------------------------------------------
+;; ivy-rich : More friendly interface for ivy
+;;            https://github.com/Yevgnen/ivy-rich
+;;
+(use-package ivy-rich
+  :init
+  (ivy-rich-mode 1))
+
+
+;; -----------------------------------------------------------------------------
+;; ivy-rich : More friendly interface for ivy
+;;            https://github.com/Yevgnen/ivy-rich
+;;
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x f" . counsel-ag)         ;; search over the whole project-directory
+         ("C-x C-f" . counsel-find-file)
+         ("C-c r" . counsel-recentf)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
+  :config
+  (setq ivy-initial-inputs-alist nil))  ;; Don't start searches with ^
+
+
+(use-package all-the-icons)
+
+
+(use-package helpful
+  :commands (helpful-callable helpful-variable helpful-command helpful-key)
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
+
+;; -----------------------------------------------------------------------------
+;; doom modeline
+;;
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1)
+  :custom (doom-modeline-height 15))
+
+
+;; -----------------------------------------------------------------------------
+;; Doom-themes are a modern set of themes for emacs.
+;;
+(use-package doom-themes
+  :init
+  (load-theme 'doom-one t)
+  :config
+  (progn
+    (doom-themes-neotree-config)
+    (setq doom-neotree-line-spacing 0)
+    (doom-themes-org-config)))
+
+
+;; -----------------------------------------------------------------------------
+;; which-key - bring up help for key bindings
+;;
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 0.3))
+
+
+;; -----------------------------------------------------------------------------
+;; general
+;; ohne evil funktioniert nicht !!! schade
+;;
+(use-package general
+  :config
+  (general-create-definer as/leader-key-def
+    :keymaps '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "M-c")
+
+  (as/leader-key-def
+    "t"  '(:ignore t :which-key "toggles")
+    "tt" '(counsel-load-theme :which-key "choose theme")))
+
+
+;; ----------------------------------------------------------------------------
+;; Projectile
+;;
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom (projectile-completion-system 'ivy)
+  :demand t
+  :bind ("C-M-p" . projectile-find-file)
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "c:/Projekte")
+    (setq projectile-project-search-path '("c:/Projekte")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+
+(use-package counsel-projectile
+;;  :disabled
+  :after projectile
+  :config
+  (counsel-projectile-mode))
+
+
+
+;; -----------------------------------------------------------------------------
+;; Magit
+;;
+;; (use-package magit
+;;   :ensure t
+;;   :bind (("C-x g" . magit-status)))
+(use-package magit
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+
+;; -----------------------------------------------------------------------------
+;; git-timemachine
+;; Travel back and forward in git history of the current file
+;;
+;; p visit previous historic version
+;; n visit next historic version
+;; w copy the hash of the current historic version
+;; q exit the time machine buffer
+;;
+(use-package git-timemachine
+  :ensure t
+  :bind (("C-x t t" . git-timemachine)))
+
+
+;; -----------------------------------------------------------------------------
+;;
+;; Git Auto Commit Mode
+(use-package git-auto-commit-mode
+  :delight)
+
+
+;;vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+;; check searchprog ag
+;; check searchprog rg
 
 ;; -----------------------------------------------------------------------------
 ;; Detection Operating System
@@ -157,11 +315,6 @@
           )
 
 
-;; -----------------------------------------------------------------------------
-;; misc useful keybindings
-;;
-(global-set-key (kbd "C-d") 'kill-whole-line)           ; Zeile löschen
-(global-set-key (kbd "<f12>") 'calculator)
 
 
 ;; -----------------------------------------------------------------------------
@@ -210,11 +363,7 @@
             (setq show-trailing-whitespace 1)))
 
 
-;; -----------------------------------------------------------------------------
-;; Linum
-;;
-(global-linum-mode)     ;; linum-mode - Zeile nummerierung
-(column-number-mode 1)
+
 
 ;; -----------------------------------------------------------------------------
 ;; Smooth scrolling (line by line) instead of jumping by half-screens.
@@ -306,7 +455,26 @@
            "C:/cygwin/usr/bin" ";"
            "C:/cygwin/bin" ";"
            "C:/tools/openjdk-14.0.2/bin" ";"
-           "c:/Qt/Qt5.15.2/5.15.2/msvc2019_64/include" ";"
+           "C:/Qt/Qt5.15.2/5.15.2/msvc2019_64/include" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/Extensions/Microsoft/IntelliCode/CLI" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/HostX64/x64" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/VC/VCPackages" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/TestWindow" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/bin/Roslyn" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Team Tools/Performance Tools/x64" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Team Tools/Performance Tools" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools/devinit" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/Shared/Common/VSPerfCollectionTools/vs2019" ";"
+           ;; "C:/Program Files (x86)/Microsoft Visual Studio/Shared/Common/VSPerfCollectionTools/vs2019/x64" ";"
+           ;; "C:/Program Files (x86)/Microsoft SDKs/Windows/v10.0A/bin/NETFX 4.8 Tools/x64" ";"
+           ;; "C:/Program Files (x86)/Windows Kits/10/bin/10.0.18362.0/x64" ";"
+           ;; "C:/Program Files (x86)/Windows Kits/10/bin/x64" ";"
+           ;; "C:/Windows/Microsoft.NET/Framework64/v4.0.30319" ";"
+           ;; "C:/Qt/Qt5.15.2/5.15.2/msvc2019_64/bin" ";"
            (getenv "PATH") ; inherited from OS
            )))
 
@@ -372,33 +540,6 @@
     :hook dired-mode))
 
 
-;; -----------------------------------------------------------------------------
-;; Magit
-;;
-(use-package magit
- :ensure t
- :bind (("C-x g" . magit-status)))
-
-
-;; -----------------------------------------------------------------------------
-;; git-timemachine
-;; Travel back and forward in git history of the current file
-;;
-;; p visit previous historic version
-;; n visit next historic version
-;; w copy the hash of the current historic version
-;; q exit the time machine buffer
-;;
-(use-package git-timemachine
-  :ensure t
-  :bind (("C-x t t" . git-timemachine)))
-
-
-;; -----------------------------------------------------------------------------
-;;
-;; Git Auto Commit Mode
-(use-package git-auto-commit-mode
-  :delight)
 
 
 ;; -----------------------------------------------------------------------------
@@ -423,46 +564,8 @@
   (drag-stuff-define-keys))
 
 
-;; -----------------------------------------------------------------------------
-;; which-key - bring up help for key bindings
-;;
-(use-package which-key
-  :ensure t
-  :config
-  (which-key-mode))
 
 
-;; -----------------------------------------------------------------------------
-;; Doom-themes are a modern set of themes for emacs.
-;;
-(use-package doom-themes
-  :init
-  (load-theme 'doom-one t)
-  :config
-  (progn
-    (doom-themes-neotree-config)
-    (setq doom-neotree-line-spacing 0)
-    (doom-themes-org-config)))
-
-;; (use-package doom-themes
-;;   :custom-face
-;;   (cursor ((t (:background "BlanchedAlmond"))))
-;;   :config
-;;   ;; flashing mode-line on errors
-;;   (doom-themes-visual-bell-config)
-;;   ;; Corrects (and improves) org-mode's native fontification.
-;;   (doom-themes-org-config)
-;;   (load-theme 'doom-one t)
-;;   (defun switch-theme ()
-;;     "An interactive funtion to switch themes."
-;;     (interactive)
-;;     (disable-theme (intern (car (mapcar #'symbol-name custom-enabled-themes))))
-;;     (call-interactively #'load-theme)))
-
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1)
-  :custom (doom-modeline-height 15))
 
 
 ;; -----------------------------------------------------------------------------
@@ -545,30 +648,6 @@
 (global-set-key [C-f1] 'show-file-name) ; Or any other key you want
 
 
-;; ----------------------------------------------------------------------------
-;; Projectile
-;;
-;; (use-package projectile
-;;   :init (projectile-global-mode)
-;;   :bind
-;;   ("C-c p" . projectile-switch-project))
-;; ;;  ("C-c z" . helm-projectile-ag)
-;; ;;  ("C-c f" . helm-projectile))
-
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  ;; :custom ((projectile-completion-system 'helm))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "c:/Projekte")
-    (setq projectile-project-search-path '("c:/Projekte")))
-  ;; (when (and *sys/win32*
-  ;;            (executable-find "tr"))
-  ;;   (setq projectile-indexing-method 'alien))
-  (setq projectile-switch-project-action #'projectile-dired))
 
 
 ;; ----------------------------------------------------------------------------
@@ -609,6 +688,11 @@
   :ensure t
   :init
   (global-flycheck-mode 1))
+
+;XXX: check this
+(add-hook 'c++-mode-hook
+          (lambda () (setq flycheck-gcc-include-path
+                      (list (expand-file-name "c:/Qt/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets")))))
 
 ;; (use-package dumb-jump
 ;;   :bind
@@ -1073,8 +1157,8 @@
 ;; -----------------------------------------------------------------------------
 ;; open corresponding header file
 ;;
-(global-set-key [C-tab] 'ff-find-other-file)
-
+;;(global-set-key [C-tab] 'ff-find-other-file)
+(define-key prog-mode-map (kbd "<C-tab>") 'ff-find-other-file)
 
 ;; -----------------------------------------------------------------------------
 ;; Syntax highlighting support for "Modern C++" - until C++20 and Technical Specification.
