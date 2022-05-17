@@ -94,6 +94,14 @@
 
 
 ;; -----------------------------------------------------------------------------
+;; misc useful keybindings
+;;
+(global-set-key (kbd "C-d") 'kill-whole-line)           ; Zeile löschen
+(global-set-key (kbd "<f12>") 'calculator)
+(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
+
+
+;; -----------------------------------------------------------------------------
 ;; ivy
 ;;
 ;;   Swiper is an easy way to search through the current buffer.
@@ -115,14 +123,6 @@
          ("C-d" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
-
-
-;; -----------------------------------------------------------------------------
-;; misc useful keybindings
-;;
-(global-set-key (kbd "C-d") 'kill-whole-line)           ; Zeile löschen
-(global-set-key (kbd "<f12>") 'calculator)
-(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
 
 
 ;; -----------------------------------------------------------------------------
@@ -150,7 +150,8 @@
   (setq ivy-initial-inputs-alist nil))  ;; Don't start searches with ^
 
 
-(use-package all-the-icons)
+(use-package all-the-icons
+  :if (display-graphic-p))
 
 
 (use-package helpful
@@ -162,7 +163,8 @@
   ([remap describe-function] . counsel-describe-function)
   ([remap describe-command] . helpful-command)
   ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
+  ([remap describe-key] . helpful-key)) ;
+
 
 ;; -----------------------------------------------------------------------------
 ;; doom modeline
@@ -202,10 +204,13 @@
 ;;
 (use-package general
   :config
+  (general-evil-setup t)
+
   (general-create-definer as/leader-key-def
     :keymaps '(normal insert visual emacs)
     :prefix "SPC"
-    :global-prefix "M-c")
+    ;; :global-prefix "M-c")
+    :global-prefix "C-SPC")
 
   (as/leader-key-def
     "t"  '(:ignore t :which-key "toggles")
@@ -237,7 +242,6 @@
   (counsel-projectile-mode))
 
 
-
 ;; -----------------------------------------------------------------------------
 ;; Magit
 ;;
@@ -248,6 +252,7 @@
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
+;; (setenv "GIT_ASKPASS" "git-gui--askpass")
 
 ;; -----------------------------------------------------------------------------
 ;; git-timemachine
@@ -451,6 +456,7 @@
 
   (setenv "PATH"
           (concat
+           "C:/home" ";"
            "C:/cygwin/usr/local/bin" ";"
            "C:/cygwin/usr/bin" ";"
            "C:/cygwin/bin" ";"
@@ -540,8 +546,6 @@
     :hook dired-mode))
 
 
-
-
 ;; -----------------------------------------------------------------------------
 ;; duplicate-thing - bring up help for key bindings
 ;;
@@ -562,11 +566,6 @@
   :init
   (drag-stuff-global-mode 1)
   (drag-stuff-define-keys))
-
-
-
-
-
 
 ;; -----------------------------------------------------------------------------
 ;; Package: undo-tree
@@ -648,8 +647,6 @@
 (global-set-key [C-f1] 'show-file-name) ; Or any other key you want
 
 
-
-
 ;; ----------------------------------------------------------------------------
 ;; Semantic
 ;;  http://tuhdo.github.io/c-ide.html#sec-9-2
@@ -694,51 +691,6 @@
           (lambda () (setq flycheck-gcc-include-path
                       (list (expand-file-name "c:/Qt/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets")))))
 
-;; (use-package dumb-jump
-;;   :bind
-;;   (:map prog-mode-map
-;;         (("C-c C-o" . dumb-jump-go-other-window)
-;;          ("C-c C-j" . dumb-jump-go)
-;;          ("C-c C-i" . dumb-jump-go-prompt)))
-;;   :custom (dumb-jump-selector 'helm))
-
-
-;; (use-package flycheck
-;;   :defer t
-;;   :diminish
-;;   :hook (after-init . global-flycheck-mode)
-;;   :commands (flycheck-add-mode)
-;;   :custom
-;;   (flycheck-global-modes
-;;    '(not outline-mode diff-mode shell-mode eshell-mode term-mode))
-;;   (flycheck-emacs-lisp-load-path 'inherit)
-;;   (flycheck-indication-mode (if (display-graphic-p) 'right-fringe 'right-margin))
-;;   :init
-;;   (if (display-graphic-p)
-;;       (use-package flycheck-posframe
-;;         :custom-face
-;;         (flycheck-posframe-face ((t (:foreground ,(face-foreground 'success)))))
-;;         (flycheck-posframe-info-face ((t (:foreground ,(face-foreground 'success)))))
-;;         :hook (flycheck-mode . flycheck-posframe-mode)
-;;         :custom
-;;         (flycheck-posframe-border-width 4)
-;;         (flycheck-posframe-inhibit-functions
-;;          '((lambda (&rest _) (bound-and-true-p company-backend)))))
-;;     (use-package flycheck-pos-tip
-;;       :defines flycheck-pos-tip-timeout
-;;       :hook (flycheck-mode . flycheck-pos-tip-mode)
-;;       :custom (flycheck-pos-tip-timeout 30)))
-;;   :config
-;;   (use-package flycheck-popup-tip
-;;     :hook (flycheck-mode . flycheck-popup-tip-mode))
-;;   (when (fboundp 'define-fringe-bitmap)
-;;     (define-fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
-;;       [16 48 112 240 112 48 16] nil nil 'center))
-;;   (when (executable-find "vale")
-;;     (use-package flycheck-vale
-;;       :config
-;;       (flycheck-vale-setup)
-;;       (flycheck-add-mode 'vale 'latex-mode))))
 
 ;; -----------------------------------------------------------------------------
 ;; NeoTree - A tree plugin like NerdTree for Vim
@@ -752,246 +704,6 @@
   :bind
   ("C-p" . neotree-toggle)
   ("C-c n" . neotree-projectile-action))
-
-
-
-;; (use-package treemacs
-;;   :init
-;;   (with-eval-after-load 'winum
-;;     (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-;;   :custom
-;;   (treemacs-collapse-dirs 3)
-;;   (treemacs-deferred-git-apply-delay 0.5)
-;;   (treemacs-display-in-side-window t)
-;;   (treemacs-file-event-delay 5000)
-;;   (treemacs-file-follow-delay 0.2)
-;;   (treemacs-follow-after-init t)
-;;   (treemacs-follow-recenter-distance 0.1)
-;;   (treemacs-git-command-pipe "")
-;;   (treemacs-goto-tag-strategy 'refetch-index)
-;;   (treemacs-indentation 2)
-;;   (treemacs-indentation-string " ")
-;;   (treemacs-is-never-other-window nil)
-;;   (treemacs-max-git-entries 5000)
-;;   (treemacs-no-png-images nil)
-;;   (treemacs-no-delete-other-windows t)
-;;   (treemacs-project-follow-cleanup nil)
-;;   (treemacs-persist-file (expand-file-name ".cache/treemacs-persist" user-emacs-directory))
-;;   (treemacs-recenter-after-file-follow nil)
-;;   (treemacs-recenter-after-tag-follow nil)
-;;   (treemacs-show-cursor nil)
-;;   (treemacs-show-hidden-files t)
-;;   (treemacs-silent-filewatch nil)
-;;   (treemacs-silent-refresh nil)
-;;   (treemacs-sorting 'alphabetic-desc)
-;;   (treemacs-space-between-root-nodes t)
-;;   (treemacs-tag-follow-cleanup t)
-;;   (treemacs-tag-follow-delay 1.5)
-;;   (treemacs-width 30)
-;;   :config
-;;   ;; The default width and height of the icons is 22 pixels. If you are
-;;   ;; using a Hi-DPI display, uncomment this to double the icon size.
-;;   ;;(treemacs-resize-icons 44)
-;;   (treemacs-follow-mode t)
-;;   (treemacs-filewatch-mode t)
-;;   (treemacs-fringe-indicator-mode t)
-;;   :bind
-;;   (("M-0"       . treemacs-select-window)
-;;    ("C-x t 1"   . treemacs-delete-other-windows)
-;;    ("C-x t t"   . treemacs)
-;;    ("C-x t B"   . treemacs-bookmark)
-;;    ("C-x t C-t" . treemacs-find-file)
-;;    ("C-x t M-t" . treemacs-find-tag))
-;;   (:map treemacs-mode-map ("C-p" . treemacs-previous-line)))
-
-
-;; (use-package treemacs-magit
-;;   :defer t
-;;   :after (treemacs magit))
-
- 
-;; -----------------------------------------------------------------------------
-;; HELM
-;;
-;; (use-package helm
-;;   :init
-;;   (progn
-;;     (require 'helm-config)
-;;     (require 'helm-grep)
-;;     ;; To fix error at compile:
-;;     ;; Error (bytecomp): Forgot to expand macro with-helm-buffer in
-;;     ;; (with-helm-buffer helm-echo-input-in-header-line)
-;;     (if (version< "26.0.50" emacs-version)
-;;         (eval-when-compile (require 'helm-lib)))
-
-;;     (defun helm-hide-minibuffer-maybe ()
-;;       (when (with-helm-buffer helm-echo-input-in-header-line)
-;;         (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
-;;           (overlay-put ov 'window (selected-window))
-;;           (overlay-put ov 'face (let ((bg-color (face-background 'default nil)))
-;;                                   `(:background ,bg-color :foreground ,bg-color)))
-;;           (setq-local cursor-type nil))))
-
-;;     (add-hook 'helm-minibuffer-set-up-hook 'helm-hide-minibuffer-maybe)
-;;     ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
-;;     ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
-;;     ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
-;;     (global-set-key (kbd "C-c h") 'helm-command-prefix)
-;;     (global-unset-key (kbd "C-x c"))
-
-;;     (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
-;;     (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
-;;     (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-
-;;     (define-key helm-grep-mode-map (kbd "<return>")  'helm-grep-mode-jump-other-window)
-;;     (define-key helm-grep-mode-map (kbd "n")  'helm-grep-mode-jump-other-window-forward)
-;;     (define-key helm-grep-mode-map (kbd "p")  'helm-grep-mode-jump-other-window-backward)
-
-;;     (when (executable-find "curl")
-;;       (setq helm-google-suggest-use-curl-p t))
-
-;;     (setq helm-google-suggest-use-curl-p t
-;;           helm-scroll-amount 4 ; scroll 4 lines other window using M-<next>/M-<prior>
-;;           ;; helm-quick-update t ; do not display invisible candidates
-;;           helm-ff-search-library-in-sexp t ; search for library in `require' and `declare-function' sexp.
-
-;;           ;; you can customize helm-do-grep to execute ack-grep
-;;           ;; helm-grep-default-command "ack-grep -Hn --smart-case --no-group --no-color %e %p %f"
-;;           ;; helm-grep-default-recurse-command "ack-grep -H --smart-case --no-group --no-color %e %p %f"
-;;           helm-split-window-in-side-p t ;; open helm buffer inside current window, not occupy whole other window
-
-;;           helm-echo-input-in-header-line t
-
-;;           ;; helm-candidate-number-limit 500 ; limit the number of displayed canidates
-;;           helm-ff-file-name-history-use-recentf t
-;;           helm-move-to-line-cycle-in-source t ; move to end or beginning of source when reaching top or bottom of source.
-;;           helm-buffer-skip-remote-checking t
-
-;;           helm-mode-fuzzy-match t
-
-;;           helm-buffers-fuzzy-matching t ; fuzzy matching buffer names when non-nil
-;;                                         ; useful in helm-mini that lists buffers
-;;           helm-org-headings-fontify t
-;;           ;; helm-find-files-sort-directories t
-;;           ;; ido-use-virtual-buffers t
-;;           helm-semantic-fuzzy-match t
-;;           helm-M-x-fuzzy-match t
-;;           helm-imenu-fuzzy-match t
-;;           helm-lisp-fuzzy-completion t
-;;           ;; helm-apropos-fuzzy-match t
-;;           helm-buffer-skip-remote-checking t
-;;           helm-locate-fuzzy-match t
-;;           helm-display-header-line nil)
-
-;;     (add-to-list 'helm-sources-using-default-as-input 'helm-source-man-pages)
-
-;;     (global-set-key (kbd "M-x") 'helm-M-x)
-;;     (global-set-key (kbd "M-y") 'helm-show-kill-ring)
-;;     (global-set-key (kbd "C-x b") 'helm-buffers-list)
-;;     (global-set-key (kbd "C-c c") 'helm-projectile)
-;;     (global-set-key (kbd "C-x C-f") 'helm-find-files)
-;;     (global-set-key (kbd "C-c r") 'helm-recentf)
-;;     (global-set-key (kbd "C-h SPC") 'helm-all-mark-rings)
-;;     (global-set-key (kbd "C-c h o") 'helm-occur)
-
-;; ;;    (global-set-key (kbd "C-c h w") 'helm-wikipedia-suggest)
-;; ;;    (global-set-key (kbd "C-c h g") 'helm-google-suggest)
-
-;;     (global-set-key (kbd "C-c h x") 'helm-register)
-;;     ;; (global-set-key (kbd "C-x r j") 'jump-to-register)
-
-;;     (define-key 'help-command (kbd "C-f") 'helm-apropos)
-;;     (define-key 'help-command (kbd "r") 'helm-info-emacs)
-;;     (define-key 'help-command (kbd "C-l") 'helm-locate-library)
-
-;;     ;; use helm to list eshell history
-;;     (add-hook 'eshell-mode-hook
-;;               #'(lambda ()
-;;                   (define-key eshell-mode-map (kbd "M-l")  'helm-eshell-history)))
-
-;; ;;; Save current position to mark ring
-;;     (add-hook 'helm-goto-line-before-hook 'helm-save-current-pos-to-mark-ring)
-
-;;     ;; show minibuffer history with Helm
-;;     (define-key minibuffer-local-map (kbd "M-p") 'helm-minibuffer-history)
-;;     (define-key minibuffer-local-map (kbd "M-n") 'helm-minibuffer-history)
-
-;;     (define-key global-map [remap find-tag] 'helm-etags-select)
-
-;;     (define-key global-map [remap list-buffers] 'helm-buffers-list)
-
-;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;     ;; PACKAGE: helm-swoop                ;;
-;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;     ;; Locate the helm-swoop folder to your path
-;;     (use-package helm-swoop
-;;       :bind (("C-c h o" . helm-swoop)
-;;              ("C-c s" . helm-multi-swoop-all))
-;;       :config
-;;       ;; When doing isearch, hand the word over to helm-swoop
-;;       (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-
-;;       ;; From helm-swoop to helm-multi-swoop-all
-;;       (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
-
-;;       ;; Save buffer when helm-multi-swoop-edit complete
-;;       (setq helm-multi-swoop-edit-save t)
-
-;;       ;; If this value is t, split window inside the current window
-;;       (setq helm-swoop-split-with-multiple-windows t)
-
-;;       ;; Split direcion. 'split-window-vertically or 'split-window-horizontally
-;;       (setq helm-swoop-split-direction 'split-window-vertically)
-
-;;       ;; If nil, you can slightly boost invoke speed in exchange for text color
-;;       (setq helm-swoop-speed-or-color t))
-
-;;     (helm-mode 1)
-
-;;     (use-package helm-projectile
-;;       :init
-;;       (helm-projectile-on)
-;;       (setq projectile-completion-system 'helm)
-;;       (setq projectile-indexing-method 'alien)
-;;       (setq projectile-switch-project-action 'helm-projectile))))
-
-
-;; ;; -----------------------------------------------------------------------------
-;; ;; this variables must be set before load helm-gtags
-;; ;; you can change to any prefix key of your choice
-;; (setq helm-gtags-prefix-key "\C-cg")
-
-;; (use-package helm-gtags
-;;   :init
-;;   (progn
-;;     (setq helm-gtags-ignore-case t
-;;           helm-gtags-auto-update t
-;;           helm-gtags-use-input-at-cursor t
-;;           helm-gtags-pulse-at-cursor t
-;;           helm-gtags-prefix-key "\C-cg"
-;;           helm-gtags-suggested-key-mapping t)
-
-;;     ;; Enable helm-gtags-mode in Dired so you can jump to any tag
-;;     ;; when navigate project tree with Dired
-;;     (add-hook 'dired-mode-hook 'helm-gtags-mode)
-
-;;     ;; Enable helm-gtags-mode in Eshell for the same reason as above
-;;     (add-hook 'eshell-mode-hook 'helm-gtags-mode)
-
-;;     ;; Enable helm-gtags-mode in languages that GNU Global supports
-;;     (add-hook 'c-mode-hook 'helm-gtags-mode)
-;;     (add-hook 'c++-mode-hook 'helm-gtags-mode)
-;;     (add-hook 'java-mode-hook 'helm-gtags-mode)
-;;     (add-hook 'asm-mode-hook 'helm-gtags-mode)
-
-;;     ;; key bindings
-;;     (with-eval-after-load 'helm-gtags
-;;       (define-key helm-gtags-mode-map (kbd "C-c g a") 'helm-gtags-tags-in-this-function)
-;;       (define-key helm-gtags-mode-map (kbd "C-j") 'helm-gtags-select)
-;;       (define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-dwim)
-;;       (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)
-;;       (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
-;;       (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history))))
 
 
 ;; -----------------------------------------------------------------------------
@@ -1538,31 +1250,6 @@ Position the cursor at it's beginning, according to the current mode."
          ("C-<f5>" . bm-remove-all-all-buffers)))
 
 
-
-;;(use-package rainbow-delimiters
-;;  :hook (prog-mode . rainbow-delimiters-mode))
-
-;; -----------------------------------------------------------------------------
-;; DON'T WORK FOR ME!
-;;(use-package sublimity
-;;  :ensure t
-;;  :config
-;;  (sublimity-mode 1))
-
-
-;; minimap.  see also sublimity, with different bugs
-;; (use-package minimap
-;;   :init
-;;   (progn
-;;     (setq minimap-major-modes '(prog-mode text-mode)
-;;           minimap-window-location 'right)
-;;     (defface minimap-active-region-background
-;;       '((((background dark)) (:background "#660000"))
-;;         (t (:background "#C847D8FEFFFF")))
-;;       "Face for the active region in the minimap.
-;;                                         By default, this is only a different background color."
-;;       :group 'minimap)))
-
 ;; -----------------------------------------------------------------------------
 ;; ispell
 ;;
@@ -1611,43 +1298,6 @@ Position the cursor at it's beginning, according to the current mode."
 (load custom-file)
 
 
-;;(require 'header2)
-
-;;(defsubst my/header-timestamp ()
-;;  "Insert field for timestamp"
-;;  (insert header-prefix-string  "Time-stamp: <>\n"))
-;; 
-;;(defsubst my/header-projectname ()
-;;  "Insert Project Name"
-;;  (insert header-prefix-string "Project    : "
-;;          (when (featurep 'projectile)
-;;            (replace-regexp-in-string "/proj/\\(.*?\\)/.*"
-;;                                      "\\1"
-;;                                      (projectile-project-root)))
-;;          "\n"))
-;; 
-;;(defsubst my/header-description ()
-;;  "Insert \"Description: \" line."
-;;  (insert header-prefix-string "Description: \n"))
-;; 
-;;(defsubst my/header-dash-line ()
-;;  "Insert dashed line"
-;;  (insert header-prefix-string)
-;;  (insert-char ?- fill-column)
-;;  (insert "\n"))
-;; 
-;;(setq make-header-hook '(my/header-timestamp
-;;                         header-blank
-;;                         my/header-dash-line
-;;                         my/header-projectname
-;;                         header-file-name
-;;                         header-author
-;;                         my/header-description
-;;                         my/header-dash-line))
-;; 
-;;(add-hook 'emacs-lisp-mode-hook #'auto-make-header)
-;;(add-hook 'prog-mode-hook #'auto-make-header)
-
 (use-package header2
   :load-path (lambda () (expand-file-name "elisp/header2" user-emacs-directory))
   :custom
@@ -1657,160 +1307,6 @@ Position the cursor at it's beginning, according to the current mode."
   (add-to-list 'write-file-functions 'auto-update-file-header)
   (autoload 'auto-make-header "header2")
   (autoload 'auto-update-file-header "header2"))
-
-;; (use-package header2
-;;   :load-path "elisp/header2"
-;;   :defer 10
-;;   :config
-;;   (progn
-
-;;     (defconst modi/header-sep-line-char ?-
-;;       "Character to be used for creating separator lines in header.")
-
-;;     (defconst modi/auto-headers-hooks '(prog-mode-hook
-;;                                         sa-c-mode-hook
-;;                                         c-mode-common-hook
-;;                                         Verilog-mode-hook
-;;                                         python-mode-hook
-;;                                         sh-mode-hook
-;;                                         cperl-mode-hook)
-;;       "List of hooks of major modes in which headers should be auto-inserted.")
-
-;;     (defvar modi/header-timestamp-cond (lambda () t)
-;;       "This variable should be set to a function that returns a non-nil
-;; value only when the time stamp is supposed to be inserted. By default, it's
-;; a `lambda' return `t', so the time stamp is always inserted.")
-
-;;     (defvar modi/header-version-cond (lambda () t)
-;;       "This variable should be set to a function that returns a non-nil
-;; value only when the version fields are supposed to be inserted. By default, it's
-;; a `lambda' return `t', so the version fields are always inserted.")
-
-;;     (defun modi/turn-on-auto-headers ()
-;;       "Turn on auto headers only for specific modes."
-;;       (interactive)
-;;       (dolist (hook modi/auto-headers-hooks)
-;;         (add-hook hook #'auto-make-header)))
-
-;;     (defun modi/turn-off-auto-headers ()
-;;       "Turn off auto headers only for specific modes."
-;;       (interactive)
-;;       (dolist (hook modi/auto-headers-hooks)
-;;         (remove-hook hook #'auto-make-header)))
-
-;;     (defun modi/header-multiline ()
-;;       "Insert multiline comment. The comment text is in `header-multiline' var."
-;;       (let ((lineno  1)
-;;             beg end nb-lines)
-;;         (beginning-of-line)
-;;         (if (nonempty-comment-end)
-;;             (insert "\n" comment-start)
-;;           ;; (header-blank)
-;;           (insert header-prefix-string))
-;;         (setq beg  (point))
-;;         (insert header-multiline)
-;;         (setq end       (point-marker)
-;;               nb-lines  (count-lines beg end))
-;;         (goto-char beg)
-;;         (forward-line 1)
-;;         (while (< lineno nb-lines)
-;;           (insert header-prefix-string)
-;;           (forward-line 1)
-;;           (setq lineno  (1+ lineno)))
-;;         (goto-char end)
-;;         (when (nonempty-comment-end) (insert "\n"))
-;;         (insert comment-end)
-;;         (insert "\n")))
-
-;;     (defsubst modi/header-sep-line ()
-;;       "Insert separator line"
-;;       (insert header-prefix-string)
-;;       (insert-char modi/header-sep-line-char (- fill-column (current-column)))
-;;       (insert "\n"))
-
-;;     (defsubst modi/header-timestamp ()
-;;       "Insert field for time stamp."
-;;       (when (funcall modi/header-timestamp-cond)
-;;         (insert header-prefix-string "Time-stamp: <>\n")
-;;         (header-blank)))
-
-;;     (defsubst modi/header-projectname ()
-;;       "Insert \"Project\" line."
-;;       (insert header-prefix-string "Project            : "
-;;               (when (and (featurep 'projectile)
-;;                          (projectile-project-root))
-;;                 (replace-regexp-in-string "/proj/\\(.*?\\)/.*"
-;;                                           "\\1"
-;;                                           (projectile-project-root)))
-;;               "\n"))
-
-;;     (defsubst modi/header-file-name ()
-;;       "Insert \"File Name\" line, using buffer's file name."
-;;       (insert header-prefix-string "File Name          : "
-;;               (if (buffer-file-name)
-;;                   (file-name-nondirectory (buffer-file-name))
-;;                 (buffer-name))
-;;               "\n"))
-
-;;     (defsubst modi/header-author ()
-;;       "Insert current user's name (`user-full-name') as this file's author."
-;;       (insert header-prefix-string
-;;               "Original Author    : "
-;;               (replace-regexp-in-string " " "." (user-full-name)) ;"Foo Bar" -> "Foo.Bar"
-;;               "@"
-;;               (replace-regexp-in-string ".*?\\(\\w+\\.\\w+\\)$" "\\1"
-;;                                         (getenv "HOST"))
-;;               "\n"))
-
-;;     (defsubst modi/header-description ()
-;;       "Insert \"Description\" line."
-;;       (insert header-prefix-string "Description        : \n"))
-
-;;     (defsubst modi/header-copyright ()
-;;       "Insert the copyright block using `modi/header-multiline'.
-;; The copyright block will inserted only if the value of `header-copyright-notice'
-;; is non-nil."
-;;       (let ((header-multiline header-copyright-notice))
-;;         (modi/header-multiline)))
-
-;;     (defsubst modi/header-version ()
-;;       "Insert version info fields that will be auto-updated by SVN."
-;;       (when (funcall modi/header-version-cond)
-;;         (insert header-prefix-string "SVN Revision       : $Rev$\n")
-;;         (insert header-prefix-string "Last Commit Date   : $Date$\n")
-;;         (insert header-prefix-string "Last Commit Author : $Author$\n")
-;;         (modi/header-sep-line)))
-
-;;     (defsubst modi/header-position-point ()
-;;       "Position the point at a particular point in the file.
-;; Bring the point 2 lines below the current point."
-;;       (forward-line 0)
-;;       (newline 2))
-
-;;     (setq make-header-hook '(modi/header-timestamp        ; // Time-stamp: <>
-;;                              modi/header-sep-line         ; // ---------------
-;;                              modi/header-projectname      ; // Project
-;;                              modi/header-file-name        ; // File Name
-;;                              modi/header-author           ; // Original Author
-;;                              modi/header-description      ; // Description
-;;                              modi/header-sep-line         ; // ---------------
-;;                              modi/header-version          ; // Revision
-;;                              modi/header-copyright        ; // Copyright (c)
-;;                              modi/header-sep-line         ; // ---------------
-;;                              modi/header-position-point))
-
-;;     (modi/turn-on-auto-headers)))
-
-;; -----------------------------------------------------------------------------
-;; Line Numbers
-;; Display line numbers, and column numbers in modeline.
-;; Hook line numbers to only when files are opened, also use linum-mode for emacs-version< 26
-;; (if (version< emacs-version "26")
-;;     (global-linum-mode)
-;;   (add-hook 'text-mode-hook #'display-line-numbers-mode)
-;;   (add-hook 'prog-mode-hook #'display-line-numbers-mode))
-;; ;; Display column numbers in modeline
-;; (column-number-mode 1)
 
 
 (use-package zone
@@ -1829,4 +1325,3 @@ Position the cursor at it's beginning, according to the current mode."
       (zone))))
 
 ;;; init.el ends here
-
