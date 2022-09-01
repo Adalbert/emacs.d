@@ -1,3 +1,4 @@
+;; -*- coding: utf-8; lexical-binding: t -*-
 ;;; init.el --- Where all the magic begins
 ;;
 ;; This file allows Emacs to initialize my customizations
@@ -10,8 +11,8 @@
 ;; -----------------------------------------------------------------------------
 ;; User info
 ;;
-(setq user-full-name "Adalbert Soborka"
-      user-mail-address "asoborka@gmx.de")
+(setq user-full-name "Adalbert Soborkas"
+      user-mail-address "a.soborka@eks-gmbh.com")
 
 (setq gc-cons-threshold 100000000)
 
@@ -65,18 +66,19 @@
 
 ;; Initialize use-package
 (unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+ (package-refresh-contents)
+ (package-install 'use-package))
 
-(require 'use-package)
-(setq use-package-always-ensure t)
+;;(require 'use-package)
+;;(setq use-package-always-ensure t)
 
-(use-package auto-package-update
-  :ensure t
-  :config
-  (setq auto-package-update-delete-old-versions t
-        auto-package-update-interval 4)
-  (auto-package-update-maybe))
+;; (use-package auto-package-update
+;;  :ensure t
+;;  :config
+;;  (setq auto-package-update-delete-old-versions t
+;;        auto-package-update-interval 4)
+;;  (auto-package-update-maybe))
+                                        ;
 
 ;; This sets up the load path so that we can override it
 ;; (package-initialize nil)
@@ -101,7 +103,7 @@
 ;;
 (global-set-key (kbd "C-d") 'kill-whole-line)           ; Zeile löschen
 (global-set-key (kbd "<f12>") 'calculator)
-(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
+;;(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
 
 
 ;; -----------------------------------------------------------------------------
@@ -112,15 +114,26 @@
 ;; -----------------------------------------------------------------------------
 ;; Backups
 ;;
-(setq delete-old-versions t
-      kept-new-versions 20
-      kept-old-versions 10
-      version-control t
-      auto-save-default nil
-      backup-directory-alist
-      `(("." . ,(expand-file-name
-		 (concat user-emacs-directory "backups")))))
+;; (setq delete-old-versions t
+;;       kept-new-versions 20
+;;       kept-old-versions 10
+;;       version-control t
+;;       auto-save-default nil
+;;       backup-directory-alist
+;;       `(("." . ,(expand-file-name
+		 ;; (concat user-emacs-directory "backups")))))
 
+;; Save backup files to a dedicated directory.
+(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+(setq delete-old-versions -1)
+
+;; Make numeric backup versions unconditionally.
+(setq version-control t)
+(setq vc-make-backup-files t)
+(setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
+
+;; Do not create lock files.
+(setq create-lockfiles nil)
 
 ;; -----------------------------------------------------------------------------
 ;; Encoding
@@ -136,7 +149,11 @@
 ;; GROUP: Editing -> Undo -> Undo Tree
 (use-package undo-tree
   :init
-  (global-undo-tree-mode 1))
+  (global-undo-tree-mode 1)
+  :config
+  ;; Prevent undo tree files from polluting your git repo
+  (setq undo-tree-auto-save-history nil))
+  ;;(setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo"))))
 
 
 ;; -----------------------------------------------------------------------------
@@ -210,7 +227,8 @@
     (global-set-key (kbd "M-y") 'helm-show-kill-ring)
     (global-set-key (kbd "C-x b") 'helm-buffers-list)
     (global-set-key (kbd "C-c c") 'helm-projectile)
-    (global-set-key (kbd "C-x C-f") 'helm-find-files)
+    (global-set-key (kbd "C-x f") 'helm-find-files)
+    (global-set-key (kbd "C-x C-f") 'helm-mini)
     (global-set-key (kbd "C-c r") 'helm-recentf)
     (global-set-key (kbd "C-h SPC") 'helm-all-mark-rings)
     (global-set-key (kbd "C-c h o") 'helm-occur)
@@ -241,6 +259,23 @@
 
     (define-key global-map [remap list-buffers] 'helm-buffers-list)
 
+
+;; it's new: check it out ----------------------------
+;;   (defun spacemacs//helm-hide-minibuffer-maybe ()
+;;      "Hide minibuffer in Helm session if we use the header line as input field."
+;;      (when (with-helm-buffer helm-echo-input-in-header-line)
+;;        (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+;;          (overlay-put ov 'window (selected-window))
+;;          (overlay-put ov 'face
+;;                       (let ((bg-color (face-background 'default nil)))
+;;                         `(:background ,bg-color :foreground ,bg-color)))
+;;          (setq-local cursor-type nil))))
+;;
+;;    (add-hook 'helm-minibuffer-set-up-hook
+;;              'spacemacs//helm-hide-minibuffer-maybe)
+;; -----------------------------------------------------
+
+
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; PACKAGE: helm-swoop                ;;
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -267,14 +302,14 @@
       ;; If nil, you can slightly boost invoke speed in exchange for text color
       (setq helm-swoop-speed-or-color t))
 
-    (helm-mode 1)
+   (helm-mode 1)
 
-    (use-package helm-projectile
-      :init
-      (helm-projectile-on)
-      (setq projectile-completion-system 'helm)
-      (setq projectile-indexing-method 'alien)
-      (setq projectile-switch-project-action 'helm-projectile))))
+   (use-package helm-projectile
+     :init
+     (helm-projectile-on)
+     (setq projectile-completion-system 'helm)
+     (setq projectile-indexing-method 'alien)
+     (setq projectile-switch-project-action 'helm-projectile))))
 
 
 ;; -----------------------------------------------------------------------------
@@ -322,16 +357,16 @@
   :if (display-graphic-p))
 
 
-(use-package helpful
-  :commands (helpful-callable helpful-variable helpful-command helpful-key)
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
+;; (use-package helpful
+;;   :commands (helpful-callable helpful-variable helpful-command helpful-key)
+;;   :custom
+;;   (counsel-describe-function-function #'helpful-callable)
+;;   (counsel-describe-variable-function #'helpful-variable)
+;;   :bind
+;;   ([remap describe-function] . counsel-describe-function)
+;;   ([remap describe-command] . helpful-command)
+;;   ([remap describe-variable] . counsel-describe-variable)
+;;   ([remap describe-key] . helpful-key))
 
 
 ;; -----------------------------------------------------------------------------
@@ -385,7 +420,7 @@
 
   (as/leader-key-def
     "t"  '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")))
+    ))
 
 
 ;; ----------------------------------------------------------------------------
@@ -395,13 +430,14 @@
   :diminish projectile-mode
   :config
   (projectile-mode)
-  (setq projectile-completion-system 'default
+  (setq projectile-completion-system 'helm ;default
         projectile-enable-caching t
+        projectile-sort-order 'recently-active
         projectile-indexing-method 'alien)
   :demand t
   :bind
-  ("C-M-p" . projectile-find-file-other-window)
-  ;;("C-c C-f" . projectile-find-file-other-window)
+  (("C-M-p" . projectile-find-file-other-window)
+   ("C-c f" . projectile-find-file))
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
@@ -455,31 +491,6 @@
    (eq system-type 'cygwin)))
 
 
-;; (defconst *sys/win32*
-;;   (eq system-type 'windows-nt)
-;;   "Are we running on a WinTel system?")
-
-;; -----------------------------------------------------------------------------
-;; Theme
-;;
-;;(load-theme 'tango-dark)       ;; dark background thema
-;;(set-cursor-color "#77ff00")   ;; set cursor color to white
-
-;; test csv
-;; (setq csv-separators '(";" "    "))
-;; (add-hook 'csv-mode-hook
-;;           (lambda ()
-;;             (define-key csv-mode-map (kbd "C-c C-M-a")
-;;               (defun csv-align-visible (&optional arg)
-;;                 "Align visible fields"
-;;                 (interactive "P")
-;;                 (csv-align-fields nil (window-start) (window-end))
-;;                 )
-;;               )
-;;             )
-;;           )
-
-
 ;; -----------------------------------------------------------------------------
 ;; Prettify Symbols
 ;;
@@ -499,15 +510,15 @@
           (lambda () (interactive)
             (setq show-trailing-whitespace 1)))
 
-
-
-
 ;; -----------------------------------------------------------------------------
 ;; Smooth scrolling (line by line) instead of jumping by half-screens.
 ;;
 (use-package smooth-scrolling
   :config
   (smooth-scrolling-mode 1))
+
+(setq-default indicate-empty-lines nil)
+
 
 ;; -----------------------------------------------------------------------------
 ;; show unncessary whitespace that can mess up your diff
@@ -718,7 +729,6 @@
   (dtrt-indent-mode 1)
   (setq dtrt-indent-verbosity 0))
 
-
 ;; -----------------------------------------------------------------------------
 ;; PACKAGE: comment-dwim-2
 ;;
@@ -823,12 +833,14 @@
   :ensure t
   :config
   (progn
+    (setq neo-window-width 35)
+    (setq neo-show-hidden-files t)
+    (setq neo-theme 'icons) ; 'classic, 'nerd, 'ascii, 'arrow
     (setq neo-smart-open t)
     (setq neo-window-fixed-size nil))
   :bind
   ("C-p" . neotree-toggle)
   ("C-c n" . neotree-projectile-action))
-
 
 ;; -----------------------------------------------------------------------------
 ;; ORG Mode
@@ -1003,7 +1015,6 @@
 ;; (user defined types, functions, etc.) and indentation.
 ;;
 (use-package modern-cpp-font-lock
-  
   :diminish t
   :init (modern-c++-font-lock-global-mode t)
   :ensure t)
@@ -1418,19 +1429,20 @@ Position the cursor at it's beginning, according to the current mode."
 ;;(org-babel-load-file "~/.emacs.d/secrets.org")
 
 ;; Keep emacs Custom-settings in separate file
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file)
+;; (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+;; (load custom-file)
 
 
 (use-package header2
   :load-path (lambda () (expand-file-name "elisp/header2" user-emacs-directory))
-  :custom
-  (header-copyright-notice (concat "Copyright (C) 2019 " (user-full-name) "\n"))
+  ;;:custom
+  ;;(header-copyright-notice (concat "Copyright (C) 2019 " (user-full-name) "\n"))
   :hook (emacs-lisp-mode . auto-make-header)
   :config
   (add-to-list 'write-file-functions 'auto-update-file-header)
   (autoload 'auto-make-header "header2")
   (autoload 'auto-update-file-header "header2"))
+
 
 
 (use-package zone
@@ -1448,4 +1460,47 @@ Position the cursor at it's beginning, according to the current mode."
     (let ((zone-programs (list (intern pgm))))
       (zone))))
 
+
+(add-to-list 'load-path "~/.emacs.d/speed-type/speed-type.el")
+(require 'speed-type)
+
+
+
+(defun ascii-table ()
+  "Display basic ASCII table (0 thru 128)."
+  (interactive)
+  (switch-to-buffer "*ASCII*")
+  (erase-buffer)
+  (setq buffer-read-only nil)        ;; Not need to edit the content, just read mode (added)
+  (local-set-key "q" 'bury-buffer)   ;; Nice to have the option to bury the buffer (added)
+  (save-excursion (let ((i -1))
+                    (insert "ASCII characters 0 thru 127.\n\n")
+                    (insert " Hex  Dec  Char|  Hex  Dec  Char|  Hex  Dec  Char|  Hex  Dec  Char\n")
+                    (while (< i 31)
+                      (insert (format "%4x %4d %4s | %4x %4d %4s | %4x %4d %4s | %4x %4d %4s\n"
+                                      (setq i (+ 1  i)) i (single-key-description i)
+                                      (setq i (+ 32 i)) i (single-key-description i)
+                                      (setq i (+ 32 i)) i (single-key-description i)
+                                      (setq i (+ 32 i)) i (single-key-description i)))
+                      (setq i (- i 96))))))
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(zygospore zoom yasnippet xkcd ws-butler which-key volatile-highlights use-package undo-tree sublimity ssh-agency speed-type spacegray-theme smooth-scrolling smooth-scroll smartparens pfuture pcmpl-git neotree modern-cpp-font-lock minimap magithub ivy-rich iedit ibuffer-projectile ht helpful helm-swoop helm-projectile helm-gtags helm-ag goto-chg google-translate google-this git-timemachine git-link git-auto-commit-mode ggtags general flycheck esh-autosuggest duplicate-thing dtrt-indent drag-stuff doom-themes doom-modeline dired-subtree dired-quick-sort dired-filter dired-collapse diminish csv-mode counsel-projectile counsel-gtags company-quickhelp company-c-headers comment-dwim-2 clean-aindent-mode cfrs bm beacon auto-package-update anzu annalist all-the-icons ag ace-window 0blayout)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-document-title ((t (:foreground "#171717" :weight bold :height 1.5))))
+ '(org-done ((t (:background "#E8E8E8" :foreground "#0E0E0E" :strike-through t :weight bold))))
+ '(org-headline-done ((t (:foreground "#171717" :strike-through t))))
+ '(org-image-actual-width '(600))
+ '(org-level-1 ((t (:foreground "#090909" :weight bold :height 1.3))))
+ '(org-level-2 ((t (:foreground "#090909" :weight normal :height 1.2))))
+ '(org-level-3 ((t (:foreground "#090909" :weight normal :height 1.1))))
+ '(variable-pitch ((t (:family "ETBembo")))))
