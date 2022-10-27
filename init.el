@@ -38,6 +38,17 @@
 
 (set-fringe-mode 10)        ; Give some breathing room
 
+;; -----------------------------------------------------------------------------
+;; Encoding
+;;
+(set-charset-priority 'unicode)
+(setq locale-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+(setq default-proces-coding-system '(utf-8-unix . utf-8-unix))
+
 
 ;; -----------------------------------------------------------------------------
 ;; Bell
@@ -49,9 +60,13 @@
 ;; Font
 ;;
 ;;(set-face-attribute 'default nil :height 90);;93
-(set-face-attribute 'default nil :font "Fira Mono:antialias=subpixel" :height 87)
-(setq-default line-spacing 3)
 
+;; (set-face-attribute 'default nil :font "Fira Mono:antialias=subpixel" :height 87) ;;87
+;; (setq-default line-spacing 3)
+
+;; Default font (cant be font with hyphen in the name like Inconsolata-g)
+(setq initial-frame-alist '((font . "IBM Plex Mono")))
+(setq default-frame-alist '((font . "IBM Plex Mono")))
 
 ;; -----------------------------------------------------------------------------
 ;; Initialize package sources
@@ -69,8 +84,8 @@
  (package-refresh-contents)
  (package-install 'use-package))
 
-;;(require 'use-package)
-;;(setq use-package-always-ensure t)
+(require 'use-package)
+(setq use-package-always-ensure nil)
 
 ;; (use-package auto-package-update
 ;;  :ensure t
@@ -135,12 +150,6 @@
 ;; Do not create lock files.
 (setq create-lockfiles nil)
 
-;; -----------------------------------------------------------------------------
-;; Encoding
-;;
-(prefer-coding-system 'utf-8)
-(setq coding-system-for-read 'utf-8)
-(setq coding-system-for-write 'utf-8)
 
 
 ;; -----------------------------------------------------------------------------
@@ -188,7 +197,7 @@
     (define-key helm-grep-mode-map (kbd "n")  'helm-grep-mode-jump-other-window-forward)
     (define-key helm-grep-mode-map (kbd "p")  'helm-grep-mode-jump-other-window-backward)
 
-    (setq ;;helm-google-suggest-use-curl-p t
+    (setq ;;helm-google-suggest-use-curl-p t
           helm-scroll-amount 4 ; scroll 4 lines other window using M-<next>/M-<prior>
           ;; helm-quick-update t ; do not display invisible candidates
           helm-ff-search-library-in-sexp t ; search for library in `require' and `declare-function' sexp.
@@ -231,7 +240,7 @@
     (global-set-key (kbd "C-x C-f") 'helm-mini)
     (global-set-key (kbd "C-c r") 'helm-recentf)
     (global-set-key (kbd "C-h SPC") 'helm-all-mark-rings)
-    (global-set-key (kbd "C-c h o") 'helm-occur)
+    (global-set-key (kbd "C-c o") 'helm-occur)
 
 ;;    (global-set-key (kbd "C-c h w") 'helm-wikipedia-suggest)
 ;;    (global-set-key (kbd "C-c h g") 'helm-google-suggest)
@@ -353,8 +362,10 @@
 ;; -----------------------------------------------------------------------------
 ;;
 ;;
-(use-package all-the-icons
-  :if (display-graphic-p))
+;; (use-package all-the-icons
+;;   :if (display-graphic-p))
+
+(use-package all-the-icons)
 
 
 ;; (use-package helpful
@@ -375,20 +386,34 @@
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
-  :custom (doom-modeline-height 15))
+  :custom
+  (doom-modeline-height 25)
+  (doom-modeline-bar-width 5)
+  (doom-modeline-project-detecton 'project)
+  )
 
 
 ;; -----------------------------------------------------------------------------
 ;; Doom-themes are a modern set of themes for emacs.
 ;;
+;; (use-package doom-themes
+;;   :init
+;;   (load-theme 'doom-one t)
+;;   :config
+;;   (progn
+;;     (doom-themes-neotree-config)
+;;     (setq doom-neotree-line-spacing 0)
+    ;; (doom-themes-org-config)))
+
 (use-package doom-themes
-  :init
-  (load-theme 'doom-one t)
+  :ensure t
   :config
-  (progn
-    (doom-themes-neotree-config)
-    (setq doom-neotree-line-spacing 0)
-    (doom-themes-org-config)))
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  (setq doom-gruvbox-dark-variant "hard"))
+  ;;doom-themes-org-config))
+
+(load-theme 'doom-gruvbox t)
 
 
 ;; -----------------------------------------------------------------------------
@@ -826,6 +851,21 @@
                       (list (expand-file-name "c:/Qt/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets")))))
 
 
+;; 21.09.22
+(flycheck-define-checker vhdl-tool
+  "A VHDL syntax checker, type checker and linter using VHDL-Tool
+See url 'https://vhdltool.com'."
+  :command ("vhdl-tool" "client" "lint" "--compact" "--stdin" "-f" source)
+  :standard-input t
+  :error-patterns
+  ((warning line-start (file-name) ":" line ":" column ":w" (message) line-end)
+   (error line-start (file-name) ":" line ":" column ":e" (message) line-end))
+  :modes (vhdl-mode))
+
+;; 21.09.22
+(add-to-list 'flycheck-checkers 'vhdl-tool)
+
+
 ;; -----------------------------------------------------------------------------
 ;; NeoTree - A tree plugin like NerdTree for Vim
 ;;
@@ -934,6 +974,9 @@
 (use-package company
   :ensure t
 ;;  :bind ("C-<tab>" . company-complete)
+  :hook (prog-mode . company-mode)   ;; 20.09.22
+  :custom                            ;; 20.09.22
+  (company-backends '(company-capf)) ;; 20.09.22
   :init
   (global-company-mode)
   :config
@@ -958,6 +1001,25 @@
   (use-package pos-tip
     :ensure t))
 
+(setq read-process-output-max (* 1024 1024))  ;1mb
+
+(require 'eglot)
+(add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+(add-hook 'c-mode-hook 'eglot-ensure)
+(add-hook 'c++-mode-hook 'eglot-ensure)
+
+;;(setq lsp-vhdl-server-path "vhdl-tool")
+
+;;(use-package lsp-mode
+;;  :ensure t
+;;  :hook (prog-mode . lsp-deferred)
+;;  :config
+;;  ;;(setq lsp-clients-clangd-args '("-j=4" "-background-index" "-log=error"))
+;;  (add-hook 'vhdl-mode-hook 'lsp)
+;;  :custom
+;;  (lsp-prefer-capf t)
+;;  (lsp-auto-guess-root t)
+;;  (lsp-keep-workspace-alive nil))
 
 ;; -----------------------------------------------------------------------------
 ;; sa-c-coding-style
@@ -991,6 +1053,15 @@
   (local-set-key (kbd "C-d") 'kill-whole-line))
 
 (add-hook 'c-mode-common-hook 'sa-c-mode-hook)
+
+
+
+(defun my-vhdl-mode-hook ()
+  ;; my customizations for all of vhdl-mode
+  (vhdl-set-offset 'statement-block-intro '++)
+  ;; other customizations can go here
+  )
+(add-hook 'vhdl-mode-hook 'my-vhdl-mode-hook)
 
 
 ;; -----------------------------------------------------------------------------
@@ -1490,7 +1561,7 @@ Position the cursor at it's beginning, according to the current mode."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(zygospore zoom yasnippet xkcd ws-butler which-key volatile-highlights use-package undo-tree sublimity ssh-agency speed-type spacegray-theme smooth-scrolling smooth-scroll smartparens pfuture pcmpl-git neotree modern-cpp-font-lock minimap magithub ivy-rich iedit ibuffer-projectile ht helpful helm-swoop helm-projectile helm-gtags helm-ag goto-chg google-translate google-this git-timemachine git-link git-auto-commit-mode ggtags general flycheck esh-autosuggest duplicate-thing dtrt-indent drag-stuff doom-themes doom-modeline dired-subtree dired-quick-sort dired-filter dired-collapse diminish csv-mode counsel-projectile counsel-gtags company-quickhelp company-c-headers comment-dwim-2 clean-aindent-mode cfrs bm beacon auto-package-update anzu annalist all-the-icons ag ace-window 0blayout)))
+   '(eshell eglot lsp-mode vhdl-capf vhdl-tools zygospore zoom yasnippet xkcd ws-butler which-key volatile-highlights use-package undo-tree sublimity ssh-agency speed-type spacegray-theme smooth-scrolling smooth-scroll smartparens pfuture pcmpl-git neotree modern-cpp-font-lock minimap magithub ivy-rich iedit ibuffer-projectile ht helpful helm-swoop helm-projectile helm-gtags helm-ag goto-chg google-translate google-this git-timemachine git-link git-auto-commit-mode ggtags general flycheck esh-autosuggest duplicate-thing dtrt-indent drag-stuff doom-themes doom-modeline dired-subtree dired-quick-sort dired-filter dired-collapse diminish csv-mode counsel-projectile counsel-gtags company-quickhelp company-c-headers comment-dwim-2 clean-aindent-mode cfrs bm beacon auto-package-update anzu annalist all-the-icons ag ace-window 0blayout)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

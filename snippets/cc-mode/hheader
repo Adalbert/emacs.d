@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: hheader
+# key: hheader
+# --
+/*
+ * $1
+ *
+ * Created on: `(format-time-string "%Y-%m-%d")`$0
+ *
+ */
