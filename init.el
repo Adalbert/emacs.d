@@ -17,6 +17,14 @@
 (setq gc-cons-threshold 100000000)
 
 
+;; Loading Saved Sessions
+;; To load your desktop file, use the command desktop-read. It will look for a desktop file in desktop-path and load the first one that it finds. By default, Desktop searches in ~ and ~/.emacs.d directories. If your desktop file is saved in another directory, you should set desktop-path accordingly.
+
+;;(desktop-save-mode)
+  ;; optional - if your desktop is saved in "~.emacs.d/.cache/"
+;;(setq desktop-path '("~/.emacs.d/.cache/"))
+;;(desktop-read)
+
 
 ;; -----------------------------------------------------------------------------
 ;; * General Configuration
@@ -40,15 +48,36 @@
 
 ;; -----------------------------------------------------------------------------
 ;; Encoding
-;;
-(set-charset-priority 'unicode)
-(setq locale-coding-system 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-(setq default-proces-coding-system '(utf-8-unix . utf-8-unix))
 
+;; (prefer-coding-system 'utf-8-unix)
+;; (set-default-coding-systems 'utf-8-unix)
+;; (set-terminal-coding-system 'utf-8-unix)
+;; (set-keyboard-coding-system 'utf-8-unix)
+;; (set-selection-coding-system 'utf-8-unix)
+;; (setq-default buffer-file-coding-system 'utf-8-unix)
+
+
+;; (set-charset-priority 'unicode)
+;; (setq locale-coding-system 'utf-8)
+;; (set-keyboard-coding-system 'utf-8)
+;; (set-selection-coding-system 'utf-8)
+;; (setq default-proces-coding-system '(utf-8-unix . utf-8-unix))
+;; (setq default-enable-multibyte-characters t)
+
+;; Use UTF-8 for all character encoding.
+;; (set-language-environment 'utf-8)
+;; (set-default-coding-systems 'utf-8)
+;; (set-selection-coding-system 'utf-8)
+;; (set-locale-environment "en.UTF-8")
+;; (prefer-coding-system 'utf-8)
+;; (setq utf-translate-cjk-mode nil) ; disable CJK coding/encoding
+
+(prefer-coding-system 'utf-8-unix)
+(set-default-coding-systems 'utf-8-unix)
+(set-terminal-coding-system 'utf-8-unix)
+(set-keyboard-coding-system 'utf-8-unix)
+(setq coding-system-for-read 'utf-8)
+(setq coding-system-for-write 'utf-8)
 
 ;; -----------------------------------------------------------------------------
 ;; Bell
@@ -61,12 +90,20 @@
 ;;
 ;;(set-face-attribute 'default nil :height 90);;93
 
-;; (set-face-attribute 'default nil :font "Fira Mono:antialias=subpixel" :height 87) ;;87
-;; (setq-default line-spacing 3)
+;; (set-face-attribute 'default nil :font "CamingoCode:antialias=subpixel" :height 95 :weight 'normal) ;;87
+(set-face-attribute 'default nil :font "CamingoCode:antialias=true" :height 95 :weight 'normal) ;;87
+(setq-default line-spacing 1)
 
 ;; Default font (cant be font with hyphen in the name like Inconsolata-g)
-(setq initial-frame-alist '((font . "IBM Plex Mono")))
-(setq default-frame-alist '((font . "IBM Plex Mono")))
+;; (setq initial-frame-alist '((font . "IBM Plex Mono")))
+;; (setq default-frame-alist '((font . "IBM Plex Mono")))
+;; (setq initial-frame-alist '((font . "Hack 10")))
+;; (setq default-frame-alist '((font . "Hack 10")))
+;; (setq initial-frame-alist '((font . "CamingoCode 10")))
+;; (setq default-frame-alist '((font . "CamingoCode 10")))
+;; (setq-default line-spacing 1)
+;; (setq initial-frame-alist '((font . "DejaVu Sans Mono-14")))
+;; (setq default-frame-alist '((font . "DejaVu Sans Mono-14")))
 
 ;; -----------------------------------------------------------------------------
 ;; Initialize package sources
@@ -389,8 +426,7 @@
   :custom
   (doom-modeline-height 25)
   (doom-modeline-bar-width 5)
-  (doom-modeline-project-detecton 'project)
-  )
+  (doom-modeline-project-detecton 'projectile))
 
 
 ;; -----------------------------------------------------------------------------
@@ -429,25 +465,6 @@
         which-key-side-window-max-width 0.33))
 
 
-;; -----------------------------------------------------------------------------
-;; general
-;; ohne evil funktioniert nicht !!! schade
-;;
-(use-package general
-  :config
-  (general-evil-setup t)
-
-  (general-create-definer as/leader-key-def
-    :keymaps '(normal insert visual emacs)
-    :prefix "SPC"
-    ;; :global-prefix "M-c")
-    :global-prefix "C-SPC")
-
-  (as/leader-key-def
-    "t"  '(:ignore t :which-key "toggles")
-    ))
-
-
 ;; ----------------------------------------------------------------------------
 ;; Projectile
 ;;
@@ -468,8 +485,7 @@
   :init
   ;; NOTE: Set this to the folder where you keep your Git repos!
   (when (file-directory-p "c:/Projekte")
-    (setq projectile-project-search-path '("c:/Projekte")))
-  (setq projectile-switch-project-action #'projectile-dired))
+    (setq projectile-project-search-path '("c:/Projekte"))))
 
 
 ;; -----------------------------------------------------------------------------
@@ -587,7 +603,8 @@
 
 ;; -----------------------------------------------------------------------------
 ;; Make C-n insert new lines if the point is at the end of the buffer.
-(setq next-line-add-newlines t)
+;; 06.12.22: changed to nil; no new lines at the end of the file
+(setq next-line-add-newlines nil)
 
 
 ;; -----------------------------------------------------------------------------
@@ -625,9 +642,9 @@
   (setenv "PATH"
           (concat
            "C:/home" ";"
-           "C:/cygwin/usr/local/bin" ";"
-           "C:/cygwin/usr/bin" ";"
-           "C:/cygwin/bin" ";"
+           "C:/tools/cygwin/usr/local/bin" ";"
+           "C:/tools/cygwin/usr/bin" ";"
+           "C:/tools/cygwin/bin" ";"
            "C:/tools/openjdk-14.0.2/bin" ";"
            "C:/Qt/Qt5.15.2/5.15.2/msvc2019_64/include" ";"
            ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/Extensions/Microsoft/IntelliCode/CLI" ";"
@@ -882,6 +899,7 @@ See url 'https://vhdltool.com'."
   ("C-p" . neotree-toggle)
   ("C-c n" . neotree-projectile-action))
 
+
 ;; -----------------------------------------------------------------------------
 ;; ORG Mode
 ;;
@@ -1003,10 +1021,10 @@ See url 'https://vhdltool.com'."
 
 (setq read-process-output-max (* 1024 1024))  ;1mb
 
-(require 'eglot)
-(add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
-(add-hook 'c-mode-hook 'eglot-ensure)
-(add-hook 'c++-mode-hook 'eglot-ensure)
+;; (require 'eglot)
+;; (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+;; (add-hook 'c-mode-hook 'eglot-ensure)
+;; (add-hook 'c++-mode-hook 'eglot-ensure)
 
 ;;(setq lsp-vhdl-server-path "vhdl-tool")
 
@@ -1084,7 +1102,7 @@ See url 'https://vhdltool.com'."
 ;; This package aims to provide a simple highlight of the C++ language without dependency.
 ;; It is recommended to use it in addition with the c++-mode major mode for extra highlighting
 ;; (user defined types, functions, etc.) and indentation.
-;;
+;; ??? was ist das?
 (use-package modern-cpp-font-lock
   :diminish t
   :init (modern-c++-font-lock-global-mode t)
@@ -1362,7 +1380,7 @@ Position the cursor at it's beginning, according to the current mode."
   (indent-according-to-mode))
 
 (global-set-key (kbd "M-o") 'prelude-smart-open-line)
-(global-set-key (kbd "M-o") 'open-line)
+;;(global-set-key (kbd "M-o") 'open-line)
 
 
 ;;------------------------------------------------------------------------------
@@ -1412,7 +1430,6 @@ Position the cursor at it's beginning, according to the current mode."
 (use-package bm
   :ensure t
   :demand t
-
   :init
   (setq bm-restore-repository-on-load t)  ;;restore on load (even before you require bm)
 
@@ -1483,6 +1500,7 @@ Position the cursor at it's beginning, according to the current mode."
   ;;(setq ispell-local-dictionary-alist
   ;;      '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US") nil utf-8))))
 
+
 (use-package zoom
   :init
   (setq zoom-mode t
@@ -1494,47 +1512,8 @@ Position the cursor at it's beginning, according to the current mode."
 (setq package-enable-at-startup nil)    ;
 
 
-
-(require 'org)
-;;(org-babel-load-file "~/.emacs.d/config.org")
-;;(org-babel-load-file "~/.emacs.d/secrets.org")
-
-;; Keep emacs Custom-settings in separate file
-;; (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-;; (load custom-file)
-
-
-(use-package header2
-  :load-path (lambda () (expand-file-name "elisp/header2" user-emacs-directory))
-  ;;:custom
-  ;;(header-copyright-notice (concat "Copyright (C) 2019 " (user-full-name) "\n"))
-  :hook (emacs-lisp-mode . auto-make-header)
-  :config
-  (add-to-list 'write-file-functions 'auto-update-file-header)
-  (autoload 'auto-make-header "header2")
-  (autoload 'auto-update-file-header "header2"))
-
-
-
-(use-package zone
-  :ensure nil
-  :defer 5
-  :config
-  ;; (zone-when-idle 600) ; in seconds
-  (defun zone-choose (pgm)
-    "Choose a PGM to run for `zone'."
-    (interactive
-     (list
-      (completing-read
-       "Program: "
-       (mapcar 'symbol-name zone-programs))))
-    (let ((zone-programs (list (intern pgm))))
-      (zone))))
-
-
 (add-to-list 'load-path "~/.emacs.d/speed-type/speed-type.el")
 (require 'speed-type)
-
 
 
 (defun ascii-table ()
@@ -1542,7 +1521,6 @@ Position the cursor at it's beginning, according to the current mode."
   (interactive)
   (switch-to-buffer "*ASCII*")
   (erase-buffer)
-  (setq buffer-read-only nil)        ;; Not need to edit the content, just read mode (added)
   (local-set-key "q" 'bury-buffer)   ;; Nice to have the option to bury the buffer (added)
   (save-excursion (let ((i -1))
                     (insert "ASCII characters 0 thru 127.\n\n")
@@ -1553,8 +1531,20 @@ Position the cursor at it's beginning, according to the current mode."
                                       (setq i (+ 32 i)) i (single-key-description i)
                                       (setq i (+ 32 i)) i (single-key-description i)
                                       (setq i (+ 32 i)) i (single-key-description i)))
-                      (setq i (- i 96))))))
+                      (setq i (- i 96)))))
+  (setq buffer-read-only t))        ;; Not need to edit the content, just read mode (added)
+
+
+;; -----------------------------------------------------------------------------
+;; Printing with ps-print on MS Windows: Using Ghostscript (lots to learn how to use)
+;;
+(setenv "GS_LIB" "C:/tools/GSTools/gs10.00.0/lib;C:/tools/GSTools/gs10.00.0/fonts")
+(setq ps-lpr-command "C:/tools/GSTools/gs10.00.0/bin/gswin64c.exe")
+(setq ps-lpr-switches '("-q" "-dNOPAUSE" "-dBATCH" "-sDEVICE=mswinpr2"))
+(setq ps-printer-name t)
+
 ;;; init.el ends here
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
