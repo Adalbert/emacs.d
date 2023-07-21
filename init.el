@@ -850,8 +850,33 @@
 ;;
 (use-package yasnippet
   :ensure t
+  :hook ((text-mode
+          prog-mode
+          conf-mode
+          snippet-mode) . yas-minor-mode-on)
   :init
   (yas-global-mode 1))
+
+;; 31.01.2023 nur zum ausprobieren
+(defun shk-yas/helm-prompt (prompt choices &optional display-fn)
+  "Use helm to select a snippet. Put this into `yas/prompt-functions.'"
+  (interactive)
+  (setq display-fn (or display-fn 'identity))
+  (if (require 'helm-config)
+      (let (tmpsource cands result rmap)
+        (setq cands (mapcar (lambda (x) (funcall display-fn x)) choices))
+        (setq rmap (mapcar (lambda (x) (cons (funcall display-fn x) x)) choices))
+        (setq tmpsource
+              (list
+               (cons 'name prompt)
+               (cons 'candidates cands)
+               '(action . (("Expand" . (lambda (selection) selection))))
+               ))
+        (setq result (helm-other-buffer '(tmpsource) "*helm-select-yasnippet"))
+        (if (null result)
+            (signal 'quit "user quit!")
+          (cdr (assoc result rmap))))
+    nil))
 
 
 ;; -----------------------------------------------------------------------------
@@ -881,7 +906,6 @@ See url 'https://vhdltool.com'."
 
 ;; 21.09.22
 (add-to-list 'flycheck-checkers 'vhdl-tool)
-
 
 ;; -----------------------------------------------------------------------------
 ;; NeoTree - A tree plugin like NerdTree for Vim
@@ -1065,7 +1089,7 @@ See url 'https://vhdltool.com'."
                                        "Q_DECLARE" "Q_ENUMS" "Q_INTERFACES"))
   (c-make-macro-with-semi-re)
 
-  (auto-fill-mode)
+  ;;(auto-fill-mode)
   ;;(electric-pair-mode nil)		;; turn on automatic bracket insertion by pairs. New in emacs 24
   (c-toggle-auto-hungry-state -1)       ;; chnaged 16.02.2017, from 1 -> -1
   (local-set-key (kbd "C-d") 'kill-whole-line))
@@ -1474,6 +1498,32 @@ Position the cursor at it's beginning, according to the current mode."
 
 
 ;; -----------------------------------------------------------------------------
+;; csv-highlight
+;;
+(require 'cl)
+(require 'color)
+
+(defun csv-highlight (&optional separator)
+  (interactive (list (when current-prefix-arg (read-char "Separator: "))))
+  (font-lock-mode 1)
+  (let* ((separator (or separator ?\,))
+         (n (count-matches (string separator) (point-at-bol) (point-at-eol)))
+         (colors (loop for i from 0 to 1.0 by (/ 2.0 n)
+                       collect (apply #'color-rgb-to-hex
+                                      (color-hsl-to-rgb i 0.3 0.5)))))
+    (loop for i from 2 to n by 2
+          for c in colors
+          for r = (format "^\\([^%c\n]+%c\\)\\{%d\\}" separator separator i)
+          do (font-lock-add-keywords nil `((,r (1 '(face (:foreground ,c)))))))))
+
+
+(add-hook 'csv-mode-hook 'csv-highlight)
+
+(add-hook 'csv-mode-hook 'csv-align-mode)
+(add-hook 'csv-mode-hook '(lambda () (interactive) (toggle-truncate-lines nil)))
+
+
+;; -----------------------------------------------------------------------------
 ;; ispell
 ;;
 (use-package ispell
@@ -1542,6 +1592,7 @@ Position the cursor at it's beginning, according to the current mode."
 (setq ps-lpr-command "C:/tools/GSTools/gs10.00.0/bin/gswin64c.exe")
 (setq ps-lpr-switches '("-q" "-dNOPAUSE" "-dBATCH" "-sDEVICE=mswinpr2"))
 (setq ps-printer-name t)
+
 
 ;;; init.el ends here
 
