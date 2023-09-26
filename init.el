@@ -17,15 +17,6 @@
 (setq gc-cons-threshold 100000000)
 
 
-;; Loading Saved Sessions
-;; To load your desktop file, use the command desktop-read. It will look for a desktop file in desktop-path and load the first one that it finds. By default, Desktop searches in ~ and ~/.emacs.d directories. If your desktop file is saved in another directory, you should set desktop-path accordingly.
-
-;;(desktop-save-mode)
-  ;; optional - if your desktop is saved in "~.emacs.d/.cache/"
-;;(setq desktop-path '("~/.emacs.d/.cache/"))
-;;(desktop-read)
-
-
 ;; -----------------------------------------------------------------------------
 ;; * General Configuration
 ;; ** User Interface
@@ -114,15 +105,18 @@
                          ;; ("melpa-stable" . "https://stable.melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "https://elpa.gnu.org/packages/")))
-(setq load-prefer-newer t)
+;;(setq load-prefer-newer t)
 
 ;; Initialize use-package
 (unless (package-installed-p 'use-package)
- (package-refresh-contents)
- (package-install 'use-package))
+  (package-refresh-contents)
+  (package-install 'use-package))
+(eval-and-compile
+  (setq use-package-always-ensure nil
+        use-package-expand-minimally t))
 
-(require 'use-package)
-(setq use-package-always-ensure nil)
+;;(require 'use-package)
+;;(setq use-package-always-ensure nil)
 
 ;; (use-package auto-package-update
 ;;  :ensure t
@@ -500,20 +494,18 @@
 ;; -----------------------------------------------------------------------------
 ;; Git Gutter
 ;;   shows added/deleted/modified code blocks that haven’t been committed by git
+;;   https://ianyepan.github.io/posts/emacs-git-gutter/
 (use-package git-gutter
-;;  :ensure t
   :hook (prog-mode . git-gutter-mode)
   :config
   (setq git-gutter:update-interval 0.02))
 
 (use-package git-gutter-fringe
-;;  :ensure t
   :config
   (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
   (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
   (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 
-;; (setenv "GIT_ASKPASS" "git-gui--askpass")
 
 ;; -----------------------------------------------------------------------------
 ;; git-timemachine
@@ -529,6 +521,7 @@
   :bind (("C-x t t" . git-timemachine)))
 
 
+;; (setenv "GIT_ASKPASS" "git-gui--askpass")
 ;;vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 ;; check searchprog ag
@@ -1062,24 +1055,6 @@ See url 'https://vhdltool.com'."
 
 (setq read-process-output-max (* 1024 1024))  ;1mb
 
-;; (require 'eglot)
-;; (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
-;; (add-hook 'c-mode-hook 'eglot-ensure)
-;; (add-hook 'c++-mode-hook 'eglot-ensure)
-
-;;(setq lsp-vhdl-server-path "vhdl-tool")
-
-;;(use-package lsp-mode
-;;  :ensure t
-;;  :hook (prog-mode . lsp-deferred)
-;;  :config
-;;  ;;(setq lsp-clients-clangd-args '("-j=4" "-background-index" "-log=error"))
-;;  (add-hook 'vhdl-mode-hook 'lsp)
-;;  :custom
-;;  (lsp-prefer-capf t)
-;;  (lsp-auto-guess-root t)
-;;  (lsp-keep-workspace-alive nil))
-
 ;; -----------------------------------------------------------------------------
 ;; sa-c-coding-style
 ;;
@@ -1087,7 +1062,7 @@ See url 'https://vhdltool.com'."
              '("stroustrup"
                (indent-tabs-mode . nil)        ; use spaces rather than tabs
                (c-access-key . "\\<\\(signals\\|public\\|protected\\|private\\|public slots\\|protected slots\\|private slots\\):")
-               (c-basic-offset . 3)            ; indent by two spaces
+               (c-basic-offset . 2)            ; indent by two spaces
                (c-offsets-alist . ((inline-open . 0)  ; custom indentation rules
                                    (brace-list-open . 0)
                                    (case-label . +)
@@ -1525,10 +1500,10 @@ Position the cursor at it's beginning, according to the current mode."
   (font-lock-mode 1)
   (let* ((separator (or separator ?\,))
          (n (count-matches (string separator) (point-at-bol) (point-at-eol)))
-         (colors (loop for i from 0 to 1.0 by (/ 2.0 n)
+         (colors (cl-loop for i from 0 to 1.0 by (/ 2.0 n)
                        collect (apply #'color-rgb-to-hex
                                       (color-hsl-to-rgb i 0.3 0.5)))))
-    (loop for i from 2 to n by 2
+    (cl-loop for i from 2 to n by 2
           for c in colors
           for r = (format "^\\([^%c\n]+%c\\)\\{%d\\}" separator separator i)
           do (font-lock-add-keywords nil `((,r (1 '(face (:foreground ,c)))))))))
