@@ -129,7 +129,7 @@
 ;; This sets up the load path so that we can override it
 ;; (package-initialize nil)
 ;; Override the packages with the git version of Org and other packages
-(add-to-list 'load-path "~/.emacs.d/site-lisp/org-mode/lisp/")
+;;(add-to-list 'load-path "~/.emacs.d/site-lisp/org-mode/lisp/")
 
 
 (global-display-line-numbers-mode t)
@@ -249,7 +249,7 @@
 
           helm-buffers-fuzzy-matching t ; fuzzy matching buffer names when non-nil
                                         ; useful in helm-mini that lists buffers
-          helm-org-headings-fontify t
+;;          helm-org-headings-fontify t
           ;; helm-find-files-sort-directories t
           ;; ido-use-virtual-buffers t
           helm-semantic-fuzzy-match t
@@ -266,7 +266,7 @@
     (global-set-key (kbd "M-x") 'helm-M-x)
     (global-set-key (kbd "M-y") 'helm-show-kill-ring)
     (global-set-key (kbd "C-x b") 'helm-buffers-list)
-    (global-set-key (kbd "C-c c") 'helm-projectile)
+    (global-set-key (kbd "C-c b") 'helm-projectile)
     (global-set-key (kbd "C-x f") 'helm-find-files)
     (global-set-key (kbd "C-x C-f") 'helm-mini)
     (global-set-key (kbd "C-c r") 'helm-recentf)
@@ -938,86 +938,113 @@ See url 'https://vhdltool.com'."
 ;; ORG Mode
 ;;
 (use-package org
-  :bind (("C-c l" . org-store-link)
-	 ("C-c c" . org-capture)
-	 ("C-c a" . org-agenda)
-	 ("C-c b" . org-iswitchb)
-	 ("C-c M-k" . org-cut-subtree)
-	 ;;	 ("<down>" . org-insert-todo-heading)
-	 :map org-mode-map
-	 ("C-c >" . org-time-stamp-inactive))
-  :custom-face
-  (variable-pitch ((t (:family "ETBembo"))))
-  (org-document-title ((t (:foreground "#171717" :weight bold :height 1.5))))
-  (org-done ((t (:background "#E8E8E8" :foreground "#0E0E0E" :strike-through t :weight bold))))
-  (org-headline-done ((t (:foreground "#171717" :strike-through t))))
-  (org-level-1 ((t (:foreground "#090909" :weight bold :height 1.3))))
-  (org-level-2 ((t (:foreground "#090909" :weight normal :height 1.2))))
-  (org-level-3 ((t (:foreground "#090909" :weight normal :height 1.1))))
-  (org-image-actual-width '(600))
-  :init
-  (setq default-major-mode 'org-mode
-	org-directory "~/org/"
-	org-log-done t
-	org-startup-indented t
-	org-startup-truncated nil
-	org-startup-with-inline-images t
-	org-completion-use-ido t
-	org-default-notes-file (concat org-directory "notes.org")
-	org-image-actual-width '(300)
-	org-goto-max-level 10
-	org-imenu-depth 5
-	org-goto-interface 'outline-path-completion
-	org-outline-path-complete-in-steps nil
-	org-src-fontify-natively t
-	org-lowest-priority ?C
-	org-default-priority ?B
-	org-expiry-inactive-timestamps t
-	org-show-notification-handler 'message
-	org-special-ctrl-a/e t
-	org-special-ctrl-k t
-	org-yank-adjusted-subtrees t
-	org-file-apps
-	'((auto-mode . emacs)
-	  ("\\.mm\\'" . default)
-	  ("\\.x?html?\\'" . "firefox %s")
-	  ("\\.pdf\\'" . "open %s"))
-	org-todo-keywords
-	'((sequence "TODO(t)" "STARTED(s)" "WAITING(w)" "SOMEDAY(.)" "MAYBE(m)" "|" "DONE(x!)" "CANCELLED(c)"))
-	;; Theming
-	org-ellipsis "  " ;; folding symbol
-	org-pretty-entities t
-	org-hide-emphasis-markers t ;; show actually italicized text instead of /italicized text/
-	org-agenda-block-separator ""
-	org-fontify-whole-heading-line t
-	org-fontify-done-headline t
-	org-fontify-quote-and-verse-blocks t)
+  :bind
+  ("C-c a" . org-agenda)
+  ("C-c c" . org-capture)
+  :config
+  (setq org-directory "C:/Users/a.soborka/Documents/org")
+  (setq org-agenda-files (list "inbox.org" "agenda.org"))
+  (setq org-capture-templates
+        `(("i" "Inbox" entry  (file "inbox.org")
+           ,(concat "* TODO %?\n"
+                    "/Entered on/ %U"))
+          ("m" "Meeting" entry  (file+headline "agenda.org" "Future")
+           ,(concat "* %? :meeting:\n"
+                    "<%<%Y-%m-%d %a %H:00>>"))
+          ("n" "Note" entry  (file "notes.org")
+           ,(concat "* Note (%a)\n"
+                    "/Entered on/ %U\n" "\n" "%?"))))
+  (setq org-agenda-hide-tags-regexp ".")          ;; remove tags like /:inbox:/ on the right
+  (setq org-agenda-prefix-format
+        '((agenda . " %i %-12:c%?-12t% s")
+;;          (todo   . " %i %-12:c")
+          (todo   . " ")
+          (tags   . " %i %-12:c")
+          (search . " %i %-12:c"))))
 
-  ;; (add-to-list 'org-global-properties
-  ;; 	       '("Effort_ALL". "0:05 0:15 0:30 1:00 2:00 3:00 4:00"))
 
-  (add-hook 'org-mode-hook
-	    '(lambda ()
-	       (setq line-spacing 0.2) ;; Add more line padding for readability
-	       (variable-pitch-mode 1) ;; All fonts with variable pitch.
-	       (mapc
-		(lambda (face) ;; Other fonts with fixed-pitch.
-		  (set-face-attribute face nil :inherit 'fixed-pitch))
-		(list 'org-code
-		      'org-link
-		      'org-block
-		      'org-table
-		      'org-verbatim
-		      'org-block-begin-line
-		      'org-block-end-line
-		      'org-meta-line
-		      'org-document-info-keyword))))
 
-  ;;  (custom-theme-set-faces
-  ;;   'spacemacs-light
-  ;;   `(org-block-begin-line ((t (:background "#fbf8ef"))))
-  ;;   `(org-block-end-line ((t (:background "#fbf8ef")))))
-  )
+;;  (use-package org
+;;    :bind (("C-c l" . org-store-link)
+;;           ("C-c c" . org-capture)
+;;           ("C-c a" . org-agenda)
+;;           ("C-c b" . org-iswitchb)
+;;           ("C-c M-k" . org-cut-subtree)
+;;           ;;	 ("<down>" . org-insert-todo-heading)
+;;           :map org-mode-map
+;;           ("C-c >" . org-time-stamp-inactive))
+;;    :custom-face
+;;    (variable-pitch ((t (:family "ETBembo"))))
+;;  ;;  (org-document-title ((t (:foreground "#171717" :weight bold :height 1.5))))
+;;  ;;  (org-done ((t (:background "#E8E8E8" :foreground "#0E0E0E" :strike-through t :weight bold))))
+;;  ;;  (org-headline-done ((t (:foreground "#171717" :strike-through t))))
+;;  ;;  (org-level-1 ((t (:foreground "#090909" :weight bold :height 1.3))))
+;;  ;;  (org-level-2 ((t (:foreground "#090909" :weight normal :height 1.2))))
+;;  ;;  (org-level-3 ((t (:foreground "#090909" :weight normal :height 1.1))))
+;;    (org-image-actual-width '(600))
+;;    :init
+;;    (setq default-major-mode 'org-mode
+;;          org-directory "~/org/"
+;;          org-log-done t
+;;          org-startup-indented t
+;;          org-startup-truncated nil
+;;          org-startup-with-inline-images t
+;;          org-completion-use-ido t
+;;          org-default-notes-file (concat org-directory "notes.org")
+;;          org-image-actual-width '(300)
+;;          org-goto-max-level 10
+;;          org-imenu-depth 5
+;;          org-goto-interface 'outline-path-completion
+;;          org-outline-path-complete-in-steps nil
+;;          org-src-fontify-natively t
+;;          org-lowest-priority ?C
+;;          org-default-priority ?B
+;;          org-expiry-inactive-timestamps t
+;;          org-show-notification-handler 'message
+;;          org-special-ctrl-a/e t
+;;          org-special-ctrl-k t
+;;          org-yank-adjusted-subtrees t
+;;          org-file-apps
+;;          '((auto-mode . emacs)
+;;            ("\\.mm\\'" . default)
+;;            ("\\.x?html?\\'" . "firefox %s")
+;;            ("\\.pdf\\'" . "open %s"))
+;;          org-todo-keywords
+;;          '((sequence "TODO(t)" "STARTED(s)" "WAITING(w)" "SOMEDAY(.)" "MAYBE(m)" "|" "DONE(x!)" "CANCELLED(c)"))
+;;          ;; Theming
+;;          org-ellipsis "  " ;; folding symbol
+;;          org-pretty-entities t
+;;          org-hide-emphasis-markers t ;; show actually italicized text instead of /italicized text/
+;;          org-agenda-block-separator ""
+;;          org-fontify-whole-heading-line t
+;;          org-fontify-done-headline t
+;;          org-fontify-quote-and-verse-blocks t)
+;;
+;;    ;; (add-to-list 'org-global-properties
+;;    ;; 	       '("Effort_ALL". "0:05 0:15 0:30 1:00 2:00 3:00 4:00"))
+;;
+;;    (add-hook 'org-mode-hook
+;;              '(lambda ()
+;;                 (setq line-spacing 0.2) ;; Add more line padding for readability
+;;                 (variable-pitch-mode 1) ;; All fonts with variable pitch.
+;;                 (mapc
+;;          	(lambda (face) ;; Other fonts with fixed-pitch.
+;;          	  (set-face-attribute face nil :inherit 'fixed-pitch))
+;;          	(list 'org-code
+;;          	      'org-link
+;;          	      'org-block
+;;          	      'org-table
+;;          	      'org-verbatim
+;;          	      'org-block-begin-line
+;;          	      'org-block-end-line
+;;          	      'org-meta-line
+;;          	      'org-document-info-keyword))))
+;;
+;;    ;;  (custom-theme-set-faces
+;;    ;;   'spacemacs-light
+;;    ;;   `(org-block-begin-line ((t (:background "#fbf8ef"))))
+;;    ;;   `(org-block-end-line ((t (:background "#fbf8ef")))))
+;;    )
 
 
 ;; -----------------------------------------------------------------------------
@@ -1600,11 +1627,4 @@ Position the cursor at it's beginning, according to the current mode."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(org-document-title ((t (:foreground "#171717" :weight bold :height 1.5))))
- '(org-done ((t (:background "#E8E8E8" :foreground "#0E0E0E" :strike-through t :weight bold))))
- '(org-headline-done ((t (:foreground "#171717" :strike-through t))))
- '(org-image-actual-width '(600))
- '(org-level-1 ((t (:foreground "#090909" :weight bold :height 1.3))))
- '(org-level-2 ((t (:foreground "#090909" :weight normal :height 1.2))))
- '(org-level-3 ((t (:foreground "#090909" :weight normal :height 1.1))))
- '(variable-pitch ((t (:family "ETBembo")))))
+ )
