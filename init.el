@@ -604,7 +604,17 @@
 
 ;; -----------------------------------------------------------------------------
 ;;
-(windmove-default-keybindings)
+(use-package windmove
+  :config
+  (setq windmove-wrap-around t)
+  ;; WIND move keybindings:
+  (windmove-default-keybindings)
+  ;; Make windmove work in org except when org needs the keybinding:
+  (add-hook 'org-shiftup-final-hook 'windmove-up)
+  (add-hook 'org-shiftleft-final-hook 'windmove-left)
+  (add-hook 'org-shiftdown-final-hook 'windmove-down)
+  (add-hook 'org-shiftright-final-hook 'windmove-windmove))
+;;(right-default-keybindings)
 
 ;; -----------------------------------------------------------------------------
 ;;
@@ -640,44 +650,6 @@
 
   (use-package esh-autosuggest
     :hook (eshell-mode . esh-autosuggest-mode)))
-
-
-;; -----------------------------------------------------------------------------
-;; example of setting env var named “path” by prepending new paths to existing paths
-;; REF: http://ergoemacs.org/emacs/eshell.html
-;;
-(when (window-system)
-  (getenv "PATH")         ;; show env var named path
-
-  (setenv "PATH"
-          (concat
-           "C:/home" ";"
-           "C:/tools/cygwin/usr/local/bin" ";"
-           "C:/tools/cygwin/usr/bin" ";"
-           "C:/tools/cygwin/bin" ";"
-           "C:/tools/openjdk-14.0.2/bin" ";"
-           "C:/Qt/Qt5.15.2/5.15.2/msvc2019_64/include" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/Extensions/Microsoft/IntelliCode/CLI" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/HostX64/x64" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/VC/VCPackages" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/TestWindow" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/bin/Roslyn" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Team Tools/Performance Tools/x64" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Team Tools/Performance Tools" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools/devinit" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/Shared/Common/VSPerfCollectionTools/vs2019" ";"
-           ;; "C:/Program Files (x86)/Microsoft Visual Studio/Shared/Common/VSPerfCollectionTools/vs2019/x64" ";"
-           ;; "C:/Program Files (x86)/Microsoft SDKs/Windows/v10.0A/bin/NETFX 4.8 Tools/x64" ";"
-           ;; "C:/Program Files (x86)/Windows Kits/10/bin/10.0.18362.0/x64" ";"
-           ;; "C:/Program Files (x86)/Windows Kits/10/bin/x64" ";"
-           ;; "C:/Windows/Microsoft.NET/Framework64/v4.0.30319" ";"
-           ;; "C:/Qt/Qt5.15.2/5.15.2/msvc2019_64/bin" ";"
-           (getenv "PATH") ; inherited from OS
-           )))
 
 
 ;; -----------------------------------------------------------------------------
@@ -943,7 +915,34 @@ See url 'https://vhdltool.com'."
   ("C-c c" . org-capture)
   :config
   (setq org-directory "C:/Users/a.soborka/Documents/org")
-  (setq org-agenda-files (list "inbox.org" "agenda.org"))
+  (setq org-agenda-files (list "inbox.org" "agenda.org"
+                               "notes.org" "projects.org"))
+
+  ;; Agenda
+  (setq org-agenda-custom-commands
+      '(("g" "Get Things Done (GTD)"
+         ((agenda ""
+                  ((org-agenda-skip-function
+                    '(org-agenda-skip-entry-if 'deadline))
+                   (org-deadline-warning-days 0)))
+          (todo "NEXT"
+                ((org-agenda-skip-function
+                  '(org-agenda-skip-entry-if 'deadline))
+                 (org-agenda-prefix-format "  %i %-12:c [%e] ")
+                 (org-agenda-overriding-header "\nTasks\n")))
+          (agenda nil
+                  ((org-agenda-entry-types '(:deadline))
+                   (org-agenda-format-date "")
+                   (org-deadline-warning-days 7)
+                   (org-agenda-skip-function
+                    '(org-agenda-skip-entry-if 'notregexp "\\* NEXT"))
+                   (org-agenda-overriding-header "\nDeadlines")))
+          (tags-todo "inbox"
+                     ((org-agenda-prefix-format "  %?-12t% s")
+                      (org-agenda-overriding-header "\nInbox\n")))
+          (tags "CLOSED>=\"<today>\""
+                ((org-agenda-overriding-header "\nCompleted today\n")))))))
+
   (setq org-capture-templates
         `(("i" "Inbox" entry  (file "inbox.org")
            ,(concat "* TODO %?\n"
@@ -960,91 +959,43 @@ See url 'https://vhdltool.com'."
 ;;          (todo   . " %i %-12:c")
           (todo   . " ")
           (tags   . " %i %-12:c")
-          (search . " %i %-12:c"))))
+          (search . " %i %-12:c")))
+  ;; (setq org-refile-targets '(("projects.org" :maxlevel . 2)
+  ;;                            ("someday.org" :level . 2)))
+  ;;------------
+  (setq org-refile-use-outline-path 'file)        ; ???
+  (setq org-outline-path-complete-in-steps nil)   ; ??? hatte ich schon
+  (setq org-refile-targets
+        '(("projects.org" :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")
+          ("someday.org" :level . 2)))
+
+  ;; Use full window for org-capture
+  ;;(add-hook 'org-capture-mode-hook 'delete-other-windows)
+  (setq org-agenda-restore-windows-after-quit t) ; restore window layout
+
+    ;; TODO
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "HOLD(h)" "|" "DONE(d)")))
+  (defun log-todo-next-creation-date (&rest ignore)
+    "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
+    (when (and (string= (org-get-todo-state) "NEXT")
+               (not (org-entry-get nil "ACTIVATED")))
+      (org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
+  (add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
 
 
+  (setq org-replace-disputed-keys t)  ; wegen shift-right to change the status-> funktioniert leider nicht
+  )
 
-;;  (use-package org
-;;    :bind (("C-c l" . org-store-link)
-;;           ("C-c c" . org-capture)
-;;           ("C-c a" . org-agenda)
-;;           ("C-c b" . org-iswitchb)
-;;           ("C-c M-k" . org-cut-subtree)
-;;           ;;	 ("<down>" . org-insert-todo-heading)
-;;           :map org-mode-map
-;;           ("C-c >" . org-time-stamp-inactive))
-;;    :custom-face
-;;    (variable-pitch ((t (:family "ETBembo"))))
-;;  ;;  (org-document-title ((t (:foreground "#171717" :weight bold :height 1.5))))
-;;  ;;  (org-done ((t (:background "#E8E8E8" :foreground "#0E0E0E" :strike-through t :weight bold))))
-;;  ;;  (org-headline-done ((t (:foreground "#171717" :strike-through t))))
-;;  ;;  (org-level-1 ((t (:foreground "#090909" :weight bold :height 1.3))))
-;;  ;;  (org-level-2 ((t (:foreground "#090909" :weight normal :height 1.2))))
-;;  ;;  (org-level-3 ((t (:foreground "#090909" :weight normal :height 1.1))))
-;;    (org-image-actual-width '(600))
-;;    :init
-;;    (setq default-major-mode 'org-mode
-;;          org-directory "~/org/"
-;;          org-log-done t
-;;          org-startup-indented t
-;;          org-startup-truncated nil
-;;          org-startup-with-inline-images t
-;;          org-completion-use-ido t
-;;          org-default-notes-file (concat org-directory "notes.org")
-;;          org-image-actual-width '(300)
-;;          org-goto-max-level 10
-;;          org-imenu-depth 5
-;;          org-goto-interface 'outline-path-completion
-;;          org-outline-path-complete-in-steps nil
-;;          org-src-fontify-natively t
-;;          org-lowest-priority ?C
-;;          org-default-priority ?B
-;;          org-expiry-inactive-timestamps t
-;;          org-show-notification-handler 'message
-;;          org-special-ctrl-a/e t
-;;          org-special-ctrl-k t
-;;          org-yank-adjusted-subtrees t
-;;          org-file-apps
-;;          '((auto-mode . emacs)
-;;            ("\\.mm\\'" . default)
-;;            ("\\.x?html?\\'" . "firefox %s")
-;;            ("\\.pdf\\'" . "open %s"))
-;;          org-todo-keywords
-;;          '((sequence "TODO(t)" "STARTED(s)" "WAITING(w)" "SOMEDAY(.)" "MAYBE(m)" "|" "DONE(x!)" "CANCELLED(c)"))
-;;          ;; Theming
-;;          org-ellipsis "  " ;; folding symbol
-;;          org-pretty-entities t
-;;          org-hide-emphasis-markers t ;; show actually italicized text instead of /italicized text/
-;;          org-agenda-block-separator ""
-;;          org-fontify-whole-heading-line t
-;;          org-fontify-done-headline t
-;;          org-fontify-quote-and-verse-blocks t)
-;;
-;;    ;; (add-to-list 'org-global-properties
-;;    ;; 	       '("Effort_ALL". "0:05 0:15 0:30 1:00 2:00 3:00 4:00"))
-;;
-;;    (add-hook 'org-mode-hook
-;;              '(lambda ()
-;;                 (setq line-spacing 0.2) ;; Add more line padding for readability
-;;                 (variable-pitch-mode 1) ;; All fonts with variable pitch.
-;;                 (mapc
-;;          	(lambda (face) ;; Other fonts with fixed-pitch.
-;;          	  (set-face-attribute face nil :inherit 'fixed-pitch))
-;;          	(list 'org-code
-;;          	      'org-link
-;;          	      'org-block
-;;          	      'org-table
-;;          	      'org-verbatim
-;;          	      'org-block-begin-line
-;;          	      'org-block-end-line
-;;          	      'org-meta-line
-;;          	      'org-document-info-keyword))))
-;;
-;;    ;;  (custom-theme-set-faces
-;;    ;;   'spacemacs-light
-;;    ;;   `(org-block-begin-line ((t (:background "#fbf8ef"))))
-;;    ;;   `(org-block-end-line ((t (:background "#fbf8ef")))))
-;;    )
+
+;; Thanks to Erik Anderson, we can also add a hook that will log when we activate a task by
+;; creating an "ACTIVATED" property the first time the task enters the NEXT state:
+(defun log-todo-next-creation-date (&rest ignore)
+  "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
+  (when (and (string= (org-get-todo-state) "NEXT")
+             (not (org-entry-get nil "ACTIVATED")))
+    (org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
+(add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
 
 
 ;; -----------------------------------------------------------------------------
@@ -1614,17 +1565,3 @@ Position the cursor at it's beginning, according to the current mode."
 
 
 ;;; init.el ends here
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(eshell eglot lsp-mode vhdl-capf vhdl-tools zygospore zoom yasnippet xkcd ws-butler which-key volatile-highlights use-package undo-tree sublimity ssh-agency speed-type spacegray-theme smooth-scrolling smooth-scroll smartparens pfuture pcmpl-git neotree modern-cpp-font-lock minimap magithub ivy-rich iedit ibuffer-projectile ht helpful helm-swoop helm-projectile helm-gtags helm-ag goto-chg google-translate google-this git-timemachine git-link git-auto-commit-mode ggtags general flycheck esh-autosuggest duplicate-thing dtrt-indent drag-stuff doom-themes doom-modeline dired-subtree dired-quick-sort dired-filter dired-collapse diminish csv-mode counsel-projectile counsel-gtags company-quickhelp company-c-headers comment-dwim-2 clean-aindent-mode cfrs bm beacon auto-package-update anzu annalist all-the-icons ag ace-window 0blayout)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
