@@ -97,9 +97,11 @@
 
 ;; --- doom-modeline ------------------------------------------
 (use-package doom-modeline
-  :ensure t
   :init (doom-modeline-mode 1)
   :custom (doom-modeline-height 15))
+
+
+;;(use-package doom-themes)  ;;still using tango-dark
 
 
 ;; --- which-key ----------------------------------------------
@@ -110,14 +112,26 @@
   (setq which-key-idle-delay 0.3))
 
 
+;; --- helpful ------------------------------------------------
+(use-package helpful
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
 
+
+  
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(counsel swiper ivy-rich which-key rainbow-delimiters command-log-mode doom-modeline ivy use-package)))
+   '(doom-themes helpful counsel swiper ivy-rich which-key rainbow-delimiters command-log-mode doom-modeline ivy use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
